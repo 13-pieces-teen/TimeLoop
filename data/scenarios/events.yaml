@@ -15,12 +15,27 @@ events:
       The Sea Breeze Inn stands before you, its windows glowing amber.
       Elias's letter crinkles in your pocket. Three weeks of silence.
       You push open the door.
+    narration_zh: >
+      傍晚的马车在雷文霍洛镇口刹住，车轮吱嘎作响。车夫面无表情地朝你点了点头，
+      随即扬鞭离去。咸涩的海风穿透大衣，你环顾四周——几栋饱经风霜的建筑蜷缩在
+      悬崖脚下，教堂尖顶在暮色中漆黑如墨，而大海——广阔、幽暗、躁动不安。
+      海风旅馆就在眼前，窗户透出琥珀色的光。口袋里伊莱亚斯的信纸窸窣作响。
+      三周的沉默。你推开了门。
     effects:
       - {type: "move_player", location: "inn"}
     choices:
-      - {id: "greet_martha", text: "Approach the innkeeper", sanity_cost: 0}
-      - {id: "read_letter", text: "Re-read Elias's letter carefully", sanity_cost: 0}
-      - {id: "look_around_inn", text: "Observe the common room", sanity_cost: 0}
+      - id: "greet_martha"
+        text: "Approach the innkeeper"
+        text_zh: "走向旅馆老板娘"
+        sanity_cost: 0
+      - id: "read_letter"
+        text: "Re-read Elias's letter carefully"
+        text_zh: "仔细重读伊莱亚斯的信"
+        sanity_cost: 0
+      - id: "look_around_inn"
+        text: "Observe the common room"
+        text_zh: "观察旅馆大厅"
+        sanity_cost: 0
 
   - id: "martha_intro"
     act: 1
@@ -35,20 +50,37 @@ events:
       doesn't quite reach her eyes. She's stout, with calloused hands and
       an apron that's perpetually damp. A silver locket rests against her
       collarbone -- she touches it unconsciously as she speaks.
+    narration_zh: >
+      柜台后的女人抬起头，露出一个温暖却未及眼底的微笑。她身材敦实，双手布满
+      老茧，围裙上永远带着潮气。一枚银色吊坠贴在她的锁骨上——她说话时不自觉
+      地抚摸着它。
     dialogue:
       speaker: "Martha Holloway"
+      speaker_zh: "玛莎·霍洛威"
       text: >
         Welcome, dear! You must be frozen through. Come in, come in.
         I've got stew on the fire and a room upstairs with clean sheets.
         We don't get many visitors these days... not since -- well.
         What brings you to Ravenhollow?
+      text_zh: >
+        欢迎，亲爱的！你一定冻坏了吧。快进来，快进来。锅里有热汤，楼上有
+        干净的房间。这阵子来客不多了……自从——算了。什么风把你吹到雷文霍洛来了？
     effects:
       - {type: "set_flag", key: "martha_introduced", value: true}
       - {type: "update_trust", npc: "martha", delta: 15}
     choices:
-      - {id: "ask_about_elias", text: "I'm looking for my friend, Dr. Elias Webb", sanity_cost: 0}
-      - {id: "ask_about_town", text: "Tell me about the town", sanity_cost: 0}
-      - {id: "just_room", text: "Just a room for the night, please", sanity_cost: 0}
+      - id: "ask_about_elias"
+        text: "I'm looking for my friend, Dr. Elias Webb"
+        text_zh: "我在找我的朋友，伊莱亚斯·韦伯博士"
+        sanity_cost: 0
+      - id: "ask_about_town"
+        text: "Tell me about the town"
+        text_zh: "和我说说这个镇子吧"
+        sanity_cost: 0
+      - id: "just_room"
+        text: "Just a room for the night, please"
+        text_zh: "只需要一间过夜的房间"
+        sanity_cost: 0
 
   - id: "mention_elias_to_martha"
     act: 1
@@ -58,27 +90,44 @@ events:
       location: "inn"
       flag: "martha_introduced"
       not_flag: "martha_knows_elias_search"
-      any_input_keyword: ["elias", "webb", "friend", "missing", "looking for"]
+      any_input_keyword: ["elias", "webb", "friend", "missing", "looking for", "scholar", "disappeared", "vanished", "searching", "investigate", "ask_about_elias", "伊莱亚斯", "韦伯", "朋友", "失踪", "寻找", "学者", "消失", "调查", "找人"]
     narration: >
       Martha's hands freeze mid-wipe. The cloth she's holding drips onto
       the counter. For just a moment, something flickers across her face
       -- recognition, and then something colder. Fear.
+    narration_zh: >
+      玛莎擦拭的手僵住了。手中的抹布滴水在柜台上。一瞬间，她脸上闪过某种
+      神情——认出了什么，然后是更冷的东西。恐惧。
     dialogue:
       speaker: "Martha Holloway"
+      speaker_zh: "玛莎·霍洛威"
       text: >
         Elias? Oh... oh yes, the scholar. He stayed here for about a week,
         always coming and going at odd hours, asking questions. Nice enough
         man, if a bit... intense. He left one morning and didn't come back.
         I assumed he'd moved on. That was... three weeks ago now, wasn't it?
+      text_zh: >
+        伊莱亚斯？哦……哦是的，那个学者。他在这住了大约一周，总是在奇怪的时间
+        进进出出，问东问西。人挺好的，就是有点……执着。他有天早上出去就再没回来。
+        我以为他走了。那是……三周前了吧？
     effects:
       - {type: "set_flag", key: "martha_knows_elias_search", value: true}
       - {type: "add_fact", fact: "elias_stayed_at_inn"}
       - {type: "add_fact", fact: "elias_disappeared_three_weeks_ago"}
       - {type: "update_trust", npc: "martha", delta: 10}
     choices:
-      - {id: "press_martha", text: "She seems afraid. Press her gently for more details.", sanity_cost: 0}
-      - {id: "ask_directions", text: "Where did he spend his time? Who did he talk to?", sanity_cost: 0}
-      - {id: "explore_town", text: "Thank her and head out to investigate the town", sanity_cost: 0}
+      - id: "press_martha"
+        text: "She seems afraid. Press her gently for more details."
+        text_zh: "她似乎在害怕。温和地追问更多细节。"
+        sanity_cost: 0
+      - id: "ask_directions"
+        text: "Where did he spend his time? Who did he talk to?"
+        text_zh: "他都去了哪些地方？和谁交谈过？"
+        sanity_cost: 0
+      - id: "explore_town"
+        text: "Thank her and head out to investigate the town"
+        text_zh: "感谢她，出门调查小镇"
+        sanity_cost: 0
 
   # ===== ACT 2: INVESTIGATION (Turn 3-6) =====
   - id: "visit_library"
@@ -96,20 +145,38 @@ events:
       'Private Collection -- Authorized Personnel Only.'
       A young woman at the front desk looks up from her reading, pushing
       wire-rimmed glasses up her nose.
+    narration_zh: >
+      图书馆比你想象中小——一间塞满书架的石头房间，书架在旧书的重压下弯曲。
+      灯光中飘浮着尘埃。最里面，一根天鹅绒绳子围住了三排更古老的书卷。
+      手写的标牌上写着："私人藏书——仅限授权人员。"前台的年轻女子从书中抬起头，
+      将金丝边眼镜推回鼻梁。
     dialogue:
       speaker: "Eleanor Marsh"
+      speaker_zh: "埃莉诺·马什"
       text: >
         Can I help you? We don't get many visitors to the library, especially
         not at this hour. If you're looking for local history, I can point
         you to the right shelf. If you're looking for anything... else,
         I'm afraid I can't help you.
+      text_zh: >
+        有什么可以帮您的吗？图书馆不常有人来，尤其是这个时间。如果您找地方志，
+        我可以指给您正确的书架。如果您找的是……别的什么，恐怕我帮不了您。
     effects:
       - {type: "set_flag", key: "library_visited", value: true}
       - {type: "update_trust", npc: "eleanor", delta: 10}
     choices:
-      - {id: "ask_eleanor_elias", text: "Ask if she knew Dr. Elias Webb", sanity_cost: 0}
-      - {id: "ask_restricted", text: "Ask about the restricted section", sanity_cost: 0}
-      - {id: "browse_history", text: "Browse the local history section", sanity_cost: 0}
+      - id: "ask_eleanor_elias"
+        text: "Ask if she knew Dr. Elias Webb"
+        text_zh: "问她是否认识伊莱亚斯·韦伯博士"
+        sanity_cost: 0
+      - id: "ask_restricted"
+        text: "Ask about the restricted section"
+        text_zh: "询问禁区书架的事"
+        sanity_cost: 0
+      - id: "browse_history"
+        text: "Browse the local history section"
+        text_zh: "浏览地方志区域"
+        sanity_cost: 0
 
   - id: "visit_church"
     act: 2
@@ -127,19 +194,37 @@ events:
       faces turned not toward heaven but toward the water. One window
       shows a figure descending into waves, arms outstretched in what
       might be prayer or surrender.
+    narration_zh: >
+      圣安德鲁教堂俯瞰着港口，花岗岩墙壁因年月与海盐而发黑。里面，一排排空
+      长椅面朝一座由单枝烛台照亮的祭坛。彩色玻璃窗捕捉着最后的暮光——但画面
+      有些不对劲。圣徒们被海洋生物环绕，面孔不是朝向天堂，而是望向海水。其中
+      一扇窗描绘着一个身影正沉入波涛，双臂展开，像是祈祷，又像是臣服。
     dialogue:
       speaker: "Father Morrison"
+      speaker_zh: "莫里森神父"
       text: >
         Good evening, my child. You're new to Ravenhollow. I can always
         tell -- outsiders have a certain... restlessness about them.
         This is a place of peace, I assure you. How may I serve?
+      text_zh: >
+        晚上好，孩子。你是新来雷文霍洛的。我总能看出来——外来人总有一种……
+        躁动。这里是个安宁的地方，我向你保证。有什么我能效劳的？
     effects:
       - {type: "set_flag", key: "church_visited", value: true}
       - {type: "update_trust", npc: "morrison", delta: 10}
     choices:
-      - {id: "ask_windows", text: "Ask about the unusual stained glass windows", sanity_cost: 0}
-      - {id: "ask_morrison_elias", text: "Ask if he knew Dr. Elias Webb", sanity_cost: 0}
-      - {id: "ask_town_history", text: "Ask about the town's founding history", sanity_cost: 0}
+      - id: "ask_windows"
+        text: "Ask about the unusual stained glass windows"
+        text_zh: "询问那些不寻常的彩色玻璃窗"
+        sanity_cost: 0
+      - id: "ask_morrison_elias"
+        text: "Ask if he knew Dr. Elias Webb"
+        text_zh: "问他是否认识伊莱亚斯·韦伯博士"
+        sanity_cost: 0
+      - id: "ask_town_history"
+        text: "Ask about the town's founding history"
+        text_zh: "询问小镇的建镇历史"
+        sanity_cost: 0
 
   - id: "visit_docks"
     act: 2
@@ -156,19 +241,37 @@ events:
       brought to the surface. An old man sits on an overturned crate at
       the pier's end, his gnarled fingers working a net that seems to
       have no beginning and no end.
+    narration_zh: >
+      脚下的栈桥吱嘎作响。三艘渔船在泊位上摇晃，但没有一艘看起来能出海——
+      油漆剥落，缆绳磨损。空气中弥漫着咸味和另一种气息，有机的、深沉的，
+      如同海底的气味被带到了水面。一位老人坐在码头尽头一只翻转的板条箱上，
+      粗糙的手指编织着一张似乎没有尽头的渔网。
     dialogue:
       speaker: "Old Silas"
+      speaker_zh: "老西拉斯"
       text: >
         Another one come to listen, eh? Or come to look? Makes no
         difference. The sea don't care why you're here. She only cares
         that you came.
+      text_zh: >
+        又一个来听的，嗯？还是来看的？没区别。大海不在乎你为什么来。
+        她只在乎你来了。
     effects:
       - {type: "set_flag", key: "docks_visited", value: true}
       - {type: "update_trust", npc: "silas", delta: 10}
     choices:
-      - {id: "ask_silas_whispers", text: "Ask about the 'whispers from the sea'", sanity_cost: -5}
-      - {id: "ask_silas_boats", text: "Ask why no one seems to be fishing", sanity_cost: 0}
-      - {id: "observe_water", text: "Walk to the edge of the pier and look down", sanity_cost: -5}
+      - id: "ask_silas_whispers"
+        text: "Ask about the 'whispers from the sea'"
+        text_zh: "问他关于「海中低语」的事"
+        sanity_cost: -5
+      - id: "ask_silas_boats"
+        text: "Ask why no one seems to be fishing"
+        text_zh: "问他为什么没人出海捕鱼"
+        sanity_cost: 0
+      - id: "observe_water"
+        text: "Walk to the edge of the pier and look down"
+        text_zh: "走到栈桥边缘，向下看"
+        sanity_cost: -5
 
   # ===== ACT 3: REVELATIONS (Trust-gated) =====
   - id: "martha_husband"
@@ -183,8 +286,12 @@ events:
       Martha's composure finally cracks. She sets down the cup she's been
       polishing -- her hands are shaking -- and sinks into the chair
       across from you. The locket at her throat catches the firelight.
+    narration_zh: >
+      玛莎的镇定终于碎裂了。她放下一直在擦拭的杯子——双手在颤抖——然后跌坐在
+      你对面的椅子上。喉间的吊坠映着火光。
     dialogue:
       speaker: "Martha Holloway"
+      speaker_zh: "玛莎·霍洛威"
       text: >
         You want to know the truth? Fine. My Thomas... he started hearing
         things. From the sea, he said. A song, he called it. Beautiful,
@@ -193,15 +300,29 @@ events:
         bed was cold. He was just... gone. Like your friend. Like the
         others before them. They all hear it eventually, the ones who
         stay too long.
+      text_zh: >
+        你想知道真相？好吧。我的托马斯……他开始听到一些东西。从海里来的，他说。
+        一首歌，他这么叫它。美极了，他说，从没听过那样的声音。他开始夜里去码头。
+        后来六个月前的一个早上，床的另一边是冰冷的。他就这么……不见了。像你的
+        朋友一样。像他们之前的那些人一样。待得太久的人，最终都会听到。
     effects:
       - {type: "set_flag", key: "martha_husband_revealed", value: true}
       - {type: "add_fact", fact: "thomas_holloway_heard_whispers"}
       - {type: "add_fact", fact: "thomas_holloway_missing_six_months"}
       - {type: "add_fact", fact: "multiple_people_have_disappeared"}
     choices:
-      - {id: "ask_locket", text: "Ask about the locket she keeps touching", sanity_cost: 0}
-      - {id: "ask_others", text: "What 'others'? How many people have disappeared?", sanity_cost: 0}
-      - {id: "comfort_martha", text: "Reach across the table and take her hand", sanity_cost: 0}
+      - id: "ask_locket"
+        text: "Ask about the locket she keeps touching"
+        text_zh: "问她一直在摸的那个吊坠"
+        sanity_cost: 0
+      - id: "ask_others"
+        text: "What 'others'? How many people have disappeared?"
+        text_zh: "什么「那些人」？有多少人失踪了？"
+        sanity_cost: 0
+      - id: "comfort_martha"
+        text: "Reach across the table and take her hand"
+        text_zh: "伸手过桌握住她的手"
+        sanity_cost: 0
 
   - id: "eleanor_confession"
     act: 3
@@ -217,8 +338,12 @@ events:
       trembling. She pulls a chair close to yours and speaks in a rapid
       whisper, words tumbling out as if she's been holding them back for
       weeks.
+    narration_zh: >
+      埃莉诺关上图书馆的门并锁上。她的双手在发抖。她把椅子拉到你身边，
+      用急促的低语说话，字句倾泻而出，像是憋了好几周。
     dialogue:
       speaker: "Eleanor Marsh"
+      speaker_zh: "埃莉诺·马什"
       text: >
         I helped him. Elias. I gave him access to the restricted section
         -- the books my grandmother kept. He was so excited, said he'd
@@ -227,6 +352,11 @@ events:
         should have told him to leave. Now he's gone and it's my fault.
         I have to show you something. The books he was reading. And the
         key -- my grandmother's key to the lighthouse.
+      text_zh: >
+        我帮过他。伊莱亚斯。我让他进了禁区——那些是我祖母收藏的书。他非常兴奋，
+        说他发现了不可思议的证据。一个规律，每三十年一次。然后莫里森发现了，
+        于是……我应该警告他的。我应该告诉他离开。现在他不见了，都是我的错。
+        我必须给你看些东西。他在读的那些书。还有钥匙——我祖母的灯塔钥匙。
     effects:
       - {type: "set_flag", key: "eleanor_confessed", value: true}
       - {type: "add_fact", fact: "eleanor_helped_elias"}
@@ -234,9 +364,18 @@ events:
       - {type: "add_item", item: "lighthouse_key"}
       - {type: "set_flag", key: "lighthouse_unlocked", value: true}
     choices:
-      - {id: "read_forbidden", text: "Read the forbidden books Elias was studying", sanity_cost: -20}
-      - {id: "ask_grandmother", text: "Tell me about your grandmother", sanity_cost: 0}
-      - {id: "go_lighthouse", text: "Take the key and head to the lighthouse immediately", sanity_cost: 0}
+      - id: "read_forbidden"
+        text: "Read the forbidden books Elias was studying"
+        text_zh: "阅读伊莱亚斯研究的禁书"
+        sanity_cost: -20
+      - id: "ask_grandmother"
+        text: "Tell me about your grandmother"
+        text_zh: "告诉我关于你祖母的事"
+        sanity_cost: 0
+      - id: "go_lighthouse"
+        text: "Take the key and head to the lighthouse immediately"
+        text_zh: "拿起钥匙，立刻前往灯塔"
+        sanity_cost: 0
 
   - id: "forbidden_tome"
     act: 3
@@ -246,7 +385,7 @@ events:
       location: "library"
       flag: "eleanor_confessed"
       not_flag: "read_forbidden_tome"
-      any_input_keyword: ["read", "book", "tome", "forbidden", "restricted"]
+      any_input_keyword: ["read", "book", "tome", "forbidden", "restricted", "study", "examine", "look at", "open", "texts", "ancient", "read_forbidden", "阅读", "书", "禁书", "禁忌", "翻看", "查看", "打开", "研究", "古书", "文献"]
     narration: >
       The book is bound in leather that feels wrong -- too warm, too
       supple, as if it were still alive. The text inside shifts between
@@ -256,6 +395,12 @@ events:
       translate as whispers. Every thirty years, the dream grows restless,
       and the town must perform a ritual to deepen the sleep. A ritual
       that requires a sacrifice.
+    narration_zh: >
+      这本书用皮革装帧，触感不对劲——太温暖、太柔韧，仿佛还活着。里面的文字
+      在拉丁文、希腊文和一种你不认识却莫名能理解的语言之间切换。它描述了一个
+      沉睡在海湾之下的存在，比基岩本身更古老，以一种人类意识翻译为低语的频率
+      做着梦。每三十年，这个梦变得躁动，小镇就必须执行一个仪式来加深沉睡。
+      一个需要牺牲的仪式。
     effects:
       - {type: "set_flag", key: "read_forbidden_tome", value: true}
       - {type: "add_fact", fact: "entity_sleeps_beneath_bay"}
@@ -263,9 +408,18 @@ events:
       - {type: "add_fact", fact: "ritual_happens_every_30_years"}
     sanity_impact: -20
     choices:
-      - {id: "keep_reading", text: "Keep reading -- there must be an alternative", sanity_cost: -10}
-      - {id: "confront_morrison", text: "Take this to Father Morrison and demand answers", sanity_cost: 0}
-      - {id: "tell_eleanor", text: "Show Eleanor what you've found", sanity_cost: 0}
+      - id: "keep_reading"
+        text: "Keep reading -- there must be an alternative"
+        text_zh: "继续读——一定有别的办法"
+        sanity_cost: -10
+      - id: "confront_morrison"
+        text: "Take this to Father Morrison and demand answers"
+        text_zh: "拿着这个去找莫里森神父要个说法"
+        sanity_cost: 0
+      - id: "tell_eleanor"
+        text: "Show Eleanor what you've found"
+        text_zh: "把发现的东西给埃莉诺看"
+        sanity_cost: 0
 
   - id: "morrison_truth"
     act: 3
@@ -280,8 +434,12 @@ events:
       Morrison's hands stop trembling for the first time. He sets down
       his rosary and meets your eyes. When he speaks, his voice is barely
       a whisper, but every word is clear.
+    narration_zh: >
+      莫里森的双手第一次停止了颤抖。他放下念珠，直视你的眼睛。当他开口时，
+      声音几乎是耳语，但每个字都清晰无比。
     dialogue:
       speaker: "Father Morrison"
+      speaker_zh: "莫里森神父"
       text: >
         Thirty years ago, I performed the ritual. The sacrifice was a
         fisherman named Arthur Crane. He went willingly -- he said the
@@ -291,15 +449,30 @@ events:
         the seal, make it permanent. I was afraid. I locked him in the
         lighthouse to stop him. I don't know how he got out, or where
         he went after. God forgive me.
+      text_zh: >
+        三十年前，我执行了仪式。祭品是一个叫亚瑟·克莱恩的渔夫。他是自愿的——
+        他说那歌声美得无法抗拒。我告诉自己这是上帝的旨意。每个夜晚我都这样
+        告诉自己。但你的朋友伊莱亚斯……他找到了另一条路。他说灯塔可以聚焦
+        封印，使之永久。我害怕了。我把他锁在灯塔里想阻止他。我不知道他怎么
+        出去的，也不知道他后来去了哪里。上帝宽恕我。
     effects:
       - {type: "set_flag", key: "morrison_confessed", value: true}
       - {type: "add_fact", fact: "morrison_performed_last_ritual"}
       - {type: "add_fact", fact: "morrison_locked_elias_in_lighthouse"}
       - {type: "add_fact", fact: "elias_found_alternative_method"}
     choices:
-      - {id: "forgive", text: "Tell him you understand -- ask him to help make it right", sanity_cost: 0}
-      - {id: "condemn", text: "How could you? Take me to the lighthouse. Now.", sanity_cost: 0}
-      - {id: "ask_ritual", text: "The ritual is coming again. When?", sanity_cost: 0}
+      - id: "forgive"
+        text: "Tell him you understand -- ask him to help make it right"
+        text_zh: "告诉他你理解——请求他帮忙弥补一切"
+        sanity_cost: 0
+      - id: "condemn"
+        text: "How could you? Take me to the lighthouse. Now."
+        text_zh: "你怎么能这样？带我去灯塔。现在。"
+        sanity_cost: 0
+      - id: "ask_ritual"
+        text: "The ritual is coming again. When?"
+        text_zh: "仪式又要来了。什么时候？"
+        sanity_cost: 0
 
   - id: "silas_truth"
     act: 3
@@ -312,8 +485,12 @@ events:
     narration: >
       Silas sets down his net. For the first time, his eyes are clear
       -- both of them, even the milky one. He pats the crate beside him.
+    narration_zh: >
+      西拉斯放下渔网。他的眼睛第一次变得清澈——两只都是，甚至那只浑浊的。
+      他拍了拍身旁的板条箱。
     dialogue:
       speaker: "Old Silas"
+      speaker_zh: "老西拉斯"
       text: >
         Sit down. I'm going to tell you what I saw, and God help us both,
         you'll believe me. Thirty years ago, I was on my boat when they
@@ -324,6 +501,13 @@ events:
         coast. And the ritual -- it doesn't kill the dream. It just pushes
         it back down. Every thirty years, we shove it back to sleep with
         a life. But it doesn't have to be that way.
+      text_zh: >
+        坐下。我要告诉你我看到的东西，上帝保佑我们俩，你会相信的。三十年前，
+        他们执行仪式的时候我在船上。水面裂开了——我不是说波浪，我是说它打开了，
+        像一扇门。然后我看到了它。庞大。古老。在做梦。它不是邪恶的，孩子。
+        它只是……大。比邪恶更大，比善良更大。它在梦见我们。整个镇子，也许整片
+        海岸。而仪式——并不能杀死那个梦。只是把它压回去。每三十年，我们用一条命
+        把它按回去继续睡。但不一定非得这样。
     effects:
       - {type: "set_flag", key: "silas_revealed", value: true}
       - {type: "add_fact", fact: "entity_is_dreaming_not_evil"}
@@ -331,9 +515,18 @@ events:
       - {type: "add_fact", fact: "caves_entrance_known"}
     sanity_impact: -15
     choices:
-      - {id: "ask_alternative", text: "What's the other way?", sanity_cost: 0}
-      - {id: "look_at_water", text: "Show me. Take me to see it.", sanity_cost: -15}
-      - {id: "ask_seal", text: "Do you still have a piece of the original seal?", sanity_cost: 0}
+      - id: "ask_alternative"
+        text: "What's the other way?"
+        text_zh: "另一种方法是什么？"
+        sanity_cost: 0
+      - id: "look_at_water"
+        text: "Show me. Take me to see it."
+        text_zh: "带我去看。让我亲眼看看。"
+        sanity_cost: -15
+      - id: "ask_seal"
+        text: "Do you still have a piece of the original seal?"
+        text_zh: "你还保留着原始封印的碎片吗？"
+        sanity_cost: 0
 
   # ===== ACT 4: LIGHTHOUSE =====
   - id: "lighthouse_discovery"
@@ -352,6 +545,11 @@ events:
       his journal open on the desk. The final entry is dated three weeks
       ago. The handwriting deteriorates into symbols that match the cave
       carvings in the books you've read.
+    narration_zh: >
+      灯塔的门呻吟着打开。门框上刻着伊莱亚斯的笔迹：「光揭示一切。」
+      楼梯螺旋上升，隐入黑暗。在第三层平台，你找到了他的工作区：每个
+      表面都钉满了纸张，天花板上贴着星图，桌上摊开着他的日记。最后一篇
+      日期是三周前。笔迹逐渐退化为与你读到的洞穴雕刻吻合的符号。
     effects:
       - {type: "set_flag", key: "found_elias_journal", value: true}
       - {type: "add_item", item: "elias_journal"}
@@ -359,9 +557,121 @@ events:
       - {type: "add_item", item: "lighthouse_lens"}
     sanity_impact: -15
     choices:
-      - {id: "read_journal", text: "Read the journal from beginning to end", sanity_cost: -10}
-      - {id: "take_lens", text: "Take the lighthouse lens -- Elias wrote it was the key", sanity_cost: 0}
-      - {id: "look_at_sea", text: "Use the lens to look out at the sea", sanity_cost: -20}
+      - id: "read_journal"
+        text: "Read the journal from beginning to end"
+        text_zh: "从头到尾阅读日记"
+        sanity_cost: -10
+      - id: "take_lens"
+        text: "Take the lighthouse lens -- Elias wrote it was the key"
+        text_zh: "拿走灯塔透镜——伊莱亚斯写道它是关键"
+        sanity_cost: 0
+      - id: "look_at_sea"
+        text: "Use the lens to look out at the sea"
+        text_zh: "用透镜望向大海"
+        sanity_cost: -20
+
+  # ===== ACT 4.5: THE DIVIDE (Faction Choice) =====
+  - id: "the_divide"
+    act: 4
+    title: "The Divide"
+    title_zh: "分歧"
+    trigger:
+      location: "inn"
+      flag: "found_elias_journal"
+      fact_required: "ritual_happens_every_30_years"
+      not_flag: "faction_chosen"
+    narration: >
+      You spread Elias's journal and the forbidden texts across the inn's
+      table. The evidence points two ways. Morrison's ritual — proven, safe,
+      but it demands a sacrifice every thirty years. Eleanor's theory — the
+      lighthouse lens could seal it permanently, but it's untested and
+      demands you walk into the caves with a shattered mind. Both paths lead
+      underground. Both paths have a cost. You must choose who to trust.
+    narration_zh: >
+      你将伊莱亚斯的日记和禁书摊开在旅馆的桌上。证据指向两条路。莫里森的仪式——
+      经过验证、安全，但每三十年就要一条人命。埃莉诺的理论——灯塔透镜可以永久
+      封印，但从未被验证，而且要求你以崩溃的心智走进洞穴。两条路都通向地下。
+      两条路都有代价。你必须选择信任谁。
+    effects:
+      - {type: "set_flag", key: "faction_chosen", value: true}
+    choices:
+      - id: "ally_morrison"
+        text: "Stand with Morrison. The ritual has worked for centuries."
+        text_zh: "站在莫里森一边。仪式已经延续了几个世纪。"
+        sanity_cost: 0
+      - id: "ally_eleanor"
+        text: "Trust Eleanor's research. Break the cycle for good."
+        text_zh: "相信埃莉诺的研究。彻底打破循环。"
+        sanity_cost: 0
+      - id: "go_alone"
+        text: "Trust neither. Find your own way in the caves."
+        text_zh: "谁也不信。在洞穴中走自己的路。"
+        sanity_cost: -10
+
+  - id: "ally_morrison_outcome"
+    act: 4
+    title: "Morrison's Resolve"
+    title_zh: "莫里森的决心"
+    trigger:
+      flag: "faction_chosen"
+      not_flag: "alliance_resolved"
+      any_input_keyword: ["morrison", "ritual", "stand with", "莫里森", "仪式", "站在", "ally_morrison"]
+    narration: >
+      Morrison clasps your hand, his grip surprisingly strong. 'Then we do
+      it the old way. Come with me to the church — I'll prepare the candle
+      and the words. When midnight nears, we go to the caves together.'
+      He presses a thick ritual candle into your hands. It smells of
+      tallow and something older — myrrh, perhaps, or bone.
+    narration_zh: >
+      莫里森握住你的手，力道出人意料地大。「那就用老方法。跟我去教堂——我来
+      准备蜡烛和祈文。午夜临近时，我们一起去洞穴。」他将一根粗大的仪式蜡烛
+      塞进你手中。它闻起来有牛脂味和更古老的东西——没药，也许是骨粉。
+    effects:
+      - {type: "set_flag", key: "alliance_resolved", value: true}
+      - {type: "set_flag", key: "morrison_allied", value: true}
+      - {type: "add_item", item: "ritual_candle"}
+    choices:
+      - id: "go_caves_now"
+        text: "Head to the caves immediately"
+        text_zh: "立刻前往洞穴"
+        sanity_cost: 0
+      - id: "prepare_more"
+        text: "Take time to prepare — visit others first"
+        text_zh: "多做些准备——先去见其他人"
+        sanity_cost: 0
+
+  - id: "ally_eleanor_outcome"
+    act: 4
+    title: "Eleanor's Gambit"
+    title_zh: "埃莉诺的赌注"
+    trigger:
+      flag: "faction_chosen"
+      not_flag: "alliance_resolved"
+      any_input_keyword: ["eleanor", "research", "trust", "break", "cycle", "埃莉诺", "研究", "相信", "打破", "循环", "ally_eleanor"]
+    narration: >
+      Eleanor's eyes blaze with desperate hope. 'Elias was right. The lens
+      can refract the seal into permanence — but you need to understand the
+      entity first. Truly understand it. That means your sanity will...'
+      She trails off. 'It means you need to be open to it. The lower your
+      rational defenses, the clearer the lens works. It's horrifying.
+      But it's the only way to end this forever.'
+    narration_zh: >
+      埃莉诺的眼中燃烧着孤注一掷的希望。「伊莱亚斯是对的。透镜可以将封印
+      折射为永久——但你需要先理解那个存在。真正地理解它。这意味着你的理智会……」
+      她说不下去了。「这意味着你需要向它敞开。你的理性防线越低，透镜就越清晰。
+      很可怕。但这是唯一能永远终结这一切的方法。」
+    effects:
+      - {type: "set_flag", key: "alliance_resolved", value: true}
+      - {type: "set_flag", key: "eleanor_ritual_known", value: true}
+    choices:
+      - id: "go_caves_now"
+        text: "Head to the caves with the lighthouse lens"
+        text_zh: "带着灯塔透镜前往洞穴"
+        sanity_cost: 0
+      - id: "lower_sanity"
+        text: "Stare into the lens first — embrace the truth"
+        text_zh: "先凝视透镜——拥抱真相"
+        sanity_cost: -20
 
   # ===== ACT 5: ENDGAME =====
   - id: "caves_entrance"
@@ -381,12 +691,27 @@ events:
       the water, something else. A vibration you feel in your bones
       rather than hear. The whispers are louder here. They are not
       whispers. They are a song.
+    narration_zh: >
+      退潮时洞口张开，如同悬崖面上的伤口。进入后空气骤变——温暖、潮湿，
+      带着盐味和某种亘古的气息。墙壁上覆盖着早于任何已知文明的雕刻。你的
+      火把——或灯塔透镜——照亮了那些在视野边缘似乎蠕动的符号。前方，隧道
+      向水声的方向下沉。水面之下还有别的东西。一种你用骨头而非耳朵感受到
+      的震动。低语在这里更响了。那不是低语。那是一首歌。
     effects:
       - {type: "set_flag", key: "entered_caves", value: true}
     choices:
-      - {id: "go_deeper", text: "Press deeper toward the inner chamber", sanity_cost: -10}
-      - {id: "examine_carvings", text: "Study the wall carvings carefully", sanity_cost: -5}
-      - {id: "turn_back", text: "This isn't right. Turn back.", sanity_cost: 0}
+      - id: "go_deeper"
+        text: "Press deeper toward the inner chamber"
+        text_zh: "向更深处的内室前进"
+        sanity_cost: -10
+      - id: "examine_carvings"
+        text: "Study the wall carvings carefully"
+        text_zh: "仔细研究墙壁上的雕刻"
+        sanity_cost: -5
+      - id: "turn_back"
+        text: "This isn't right. Turn back."
+        text_zh: "不对劲。回头。"
+        sanity_cost: 0
 
   # ===== MIDNIGHT =====
   - id: "midnight_approaches"
@@ -402,6 +727,10 @@ events:
       lengthen. Something in the town shifts, as if Ravenhollow itself
       is holding its breath. You have thirty minutes before midnight.
       Whatever you're going to do, do it now.
+    narration_zh: >
+      远处钟声敲响一下——一声警告。你先是在胸口感受到它，然后才听见。十一点半。
+      空气变得沉重。阴影拉长。镇上有什么东西变了，仿佛雷文霍洛本身在屏住呼吸。
+      距离午夜还有三十分钟。不管你要做什么，现在就做。
     effects:
       - {type: "set_flag", key: "midnight_warned", value: true}
     choices: []

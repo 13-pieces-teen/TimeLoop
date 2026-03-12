@@ -18,8 +18,8 @@ from src.state.loop_memory import LoopMemory
 
 logger = logging.getLogger(__name__)
 
-AUTO_TRUST_PER_INTERACTION = 5
-TIME_PER_TURN = 30
+AUTO_TRUST_PER_INTERACTION = 8
+TIME_PER_TURN = 20
 
 
 @dataclass
@@ -47,6 +47,7 @@ class GameEngine:
         config_dir: str = "config",
         data_dir: str = "data",
         log_dir: str = "logs",
+        lang: str = "en",
     ):
         self.config_dir = Path(config_dir)
         self.data_dir = Path(data_dir)
@@ -73,6 +74,7 @@ class GameEngine:
         events_path = self.data_dir / "scenarios" / "events.yaml"
         self.event_system = EventSystem(events_path) if events_path.exists() else None
 
+        self.lang = lang
         self.game_state: GameState | None = None
         self.loop_memory = LoopMemory()
         self._trajectory: list[dict] = []
@@ -119,6 +121,11 @@ class GameEngine:
         self.game_state.sanity = min(100, 100 - max(0, self.loop_memory.total_loops * 5))
         self.game_state.discovered_facts = list(self.loop_memory.discovered_facts)
 
+        for npc_id, npc in self.game_state.characters.items():
+            prev_max = self.loop_memory.npc_max_trust.get(npc_id, 0)
+            if prev_max > 0:
+                npc.trust = int(prev_max * 0.3)
+
         if self.event_system:
             self.event_system.reset_for_new_loop(self.loop_memory)
 
@@ -139,28 +146,34 @@ class GameEngine:
         if not self.game_state:
             return TurnResult(error="No active game.")
 
+        lang = self.lang
         state_logs = self.game_state.apply_state_updates(event.effects)
         sanity_delta = event.sanity_impact
         self.game_state.modify_sanity(sanity_delta)
         self.game_state.advance_time(TIME_PER_TURN)
 
+        narration = event.get_narration(lang)
+        dialogue = event.get_dialogue(lang)
+        choices = event.get_choices(lang)
+
         self.game_state.add_turn_to_history({
             "player_input": f"[EVENT: {event.id}]",
             "intent": "EVENT",
-            "narration": event.narration[:150],
+            "narration": narration[:150],
         })
 
+        fallback_continue = "继续" if lang == "zh" else "Continue"
         result = TurnResult(
-            narration=event.narration,
-            dialogue_speaker=event.dialogue.get("speaker") if event.dialogue else None,
-            dialogue_text=event.dialogue.get("text") if event.dialogue else None,
-            choices=event.choices if event.choices else [
-                {"id": "continue", "text": "Continue", "sanity_cost": 0},
+            narration=narration,
+            dialogue_speaker=dialogue.get("speaker") if dialogue else None,
+            dialogue_text=dialogue.get("text") if dialogue else None,
+            choices=choices if choices else [
+                {"id": "continue", "text": fallback_continue, "sanity_cost": 0},
             ],
             intent="EVENT",
             sanity_delta=sanity_delta,
             state_logs=state_logs,
-            event_triggered=event.title_zh,
+            event_triggered=event.get_title(lang),
         )
 
         ending = self._check_endings()
@@ -198,8 +211,14 @@ class GameEngine:
 
         # --- LLM generation for non-event turns ---
         system_prompt = self.prompt_builder.build_system_prompt(
-            self.game_state, self.loop_memory
+            self.game_state, self.loop_memory, lang=self.lang,
         )
+        if self.event_system:
+            narrative_hints = self.event_system.get_narrative_hints(
+                self.game_state, self.loop_memory, lang=self.lang,
+            )
+            if narrative_hints:
+                system_prompt += "\n\n" + narrative_hints
         user_msg = self.prompt_builder.build_user_message(player_input)
 
         parsed = None
@@ -267,6 +286,17 @@ class GameEngine:
         self._apply_parsed_output(parsed)
         self._log_turn(player_input, parsed)
 
+        if self.event_system and parsed.entities:
+            entity_text = " ".join(str(v) for v in parsed.entities.values() if v)
+            combined_input = f"{player_input} {entity_text}"
+            late_event = self.event_system.check_events(
+                self.game_state, self.loop_memory, combined_input
+            )
+            if late_event:
+                event_result = self._apply_event(late_event)
+                event_result.consistency_log = "\n".join(consistency_log_parts)
+                return event_result
+
         result = self._build_turn_result(parsed)
         result.consistency_log = "\n".join(consistency_log_parts)
 
@@ -333,7 +363,7 @@ class GameEngine:
 
     def _generate_opening(self) -> TurnResult:
         system_prompt, user_msg = self.prompt_builder.build_opening_prompt(
-            self.game_state, self.loop_memory
+            self.game_state, self.loop_memory, lang=self.lang,
         )
         try:
             raw_response = self.llm.chat(
@@ -413,7 +443,7 @@ class GameEngine:
         if (
             state.flags.get("eleanor_ritual_known")
             and state.has_item("lighthouse_lens")
-            and "elias_alternative_method" in state.discovered_facts
+            and "elias_found_alternative_method" in state.discovered_facts
             and state.location == "caves"
             and state.sanity <= 40
         ):
@@ -458,4 +488,4 @@ class GameEngine:
     def get_event_timeline_html(self) -> str:
         if not self.event_system or not self.game_state:
             return ""
-        return self.event_system.format_timeline_html(self.game_state)
+        return self.event_system.format_timeline_html(self.game_state, lang=self.lang)

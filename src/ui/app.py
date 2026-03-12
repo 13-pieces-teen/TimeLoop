@@ -4,6 +4,7 @@ import gradio as gr
 
 from src.game.engine import GameEngine, TurnResult
 from src.game.loop_manager import LoopManager
+from src.ui.i18n import t, loc_name
 
 SANITY_COLORS = {
     "lucid": "#4ade80",
@@ -146,6 +147,16 @@ CSS = """
 .ctrl-btn {
     font-size: 0.85em !important;
     padding: 6px 12px !important;
+}
+
+/* -- Language toggle -- */
+.lang-btn {
+    min-width: 44px !important;
+    max-width: 44px !important;
+    font-size: 0.8em !important;
+    padding: 4px 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
 }
 
 /* -- Horizontal timeline -- */
@@ -327,10 +338,10 @@ CSS = """
 
 
 # =====================================================================
-# Formatters
+# Formatters (all accept lang)
 # =====================================================================
 
-def format_narration(result: TurnResult) -> str:
+def format_narration(result: TurnResult, lang: str = "en") -> str:
     parts = []
     if result.event_triggered:
         parts.append(f"### {result.event_triggered}\n\n")
@@ -344,9 +355,9 @@ def format_narration(result: TurnResult) -> str:
     return "".join(parts)
 
 
-def format_info_bar(engine: GameEngine) -> str:
+def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     if not engine.game_state:
-        return '<div class="info-bar"><span>Press New Game to begin</span></div>'
+        return f'<div class="info-bar"><span>{t("press_new_game", lang)}</span></div>'
     gs = engine.game_state
     lm = engine.loop_memory
 
@@ -354,11 +365,13 @@ def format_info_bar(engine: GameEngine) -> str:
     level = gs.sanity_level
     color = SANITY_COLORS.get(level, "#fff")
     filled = int(sanity / 5)
-    bar = "█" * filled + "░" * (20 - filled)
+    bar = "\u2588" * filled + "\u2591" * (20 - filled)
 
-    loop_info = f"Loop #{gs.loop_count}"
+    loop_info = f"{t('loop_label', lang)} #{gs.loop_count}"
     if lm.total_loops > 0:
-        loop_info += f" (memories: {lm.total_loops})"
+        loop_info += f" ({t('memories_label', lang)}: {lm.total_loops})"
+
+    location = loc_name(gs.location, lang)
 
     return (
         f'<div class="info-bar">'
@@ -366,42 +379,68 @@ def format_info_bar(engine: GameEngine) -> str:
         f'<span style="color:{color}; font-weight:600;">{bar} {sanity}/100 [{level.upper()}]</span>'
         f'</div>'
         f'<div class="meta-section">'
-        f'{gs.current_time_str} ({gs.minutes_until_midnight} min left) '
-        f'&nbsp;|&nbsp; {loop_info} &nbsp;|&nbsp; Turn {gs.turn} '
-        f'&nbsp;|&nbsp; {gs.location.replace("_", " ").title()}'
+        f'{gs.current_time_str} ({gs.minutes_until_midnight} {t("min_left", lang)}) '
+        f'&nbsp;|&nbsp; {loop_info} &nbsp;|&nbsp; {t("turn_label", lang)} {gs.turn} '
+        f'&nbsp;|&nbsp; {location}'
         f'</div>'
         f'</div>'
     )
 
 
-def format_status(engine: GameEngine) -> str:
+TRUST_THRESHOLDS = [30, 40, 50, 60, 70, 90]
+
+TRUST_HINTS_ZH = {
+    "close": "似乎快要对你说什么了",
+    "warming": "正在慢慢信任你",
+    "guarded": "对你还很警惕",
+}
+TRUST_HINTS_EN = {
+    "close": "seems about to tell you something",
+    "warming": "is warming up to you",
+    "guarded": "is still guarded around you",
+}
+
+
+def _get_trust_hint(trust: int, lang: str) -> str:
+    hints = TRUST_HINTS_ZH if lang == "zh" else TRUST_HINTS_EN
+    next_threshold = next((t for t in TRUST_THRESHOLDS if t > trust), None)
+    if next_threshold is None:
+        return ""
+    gap = next_threshold - trust
+    if gap <= 10:
+        return f" -- {hints['close']}"
+    if gap <= 25:
+        return f" -- {hints['warming']}"
+    return ""
+
+
+def format_status(engine: GameEngine, lang: str = "en") -> str:
     if not engine.game_state:
         return ""
     gs = engine.game_state
 
-    lines = [f"Inventory: {', '.join(gs.inventory) or '(empty)'}", ""]
+    inv_label = t("label_inventory", lang)
+    inv_items = ", ".join(gs.inventory) or t("inventory_empty", lang)
+    lines = [f"{inv_label}: {inv_items}", ""]
 
-    lines.append("NPCs:")
+    lines.append(f"{t('label_npcs', lang)}:")
     for npc_id, npc in gs.characters.items():
         here = " *" if npc.location == gs.location else ""
         bar_len = npc.trust // 10
         trust_bar = "=" * bar_len + "-" * (10 - bar_len)
+        hint = _get_trust_hint(npc.trust, lang)
         lines.append(f"  {npc.name}{here}")
-        lines.append(f"    [{trust_bar}] {npc.trust}")
+        lines.append(f"    [{trust_bar}] {npc.trust}{hint}")
 
     if gs.discovered_facts:
         lines.append("")
-        lines.append(f"Facts discovered: {len(gs.discovered_facts)}")
+        lines.append(f"{t('label_facts', lang)}: {len(gs.discovered_facts)}")
         for f in gs.discovered_facts[-5:]:
             lines.append(f"  - {f.replace('_', ' ')}")
         if len(gs.discovered_facts) > 5:
-            lines.append(f"  ... and {len(gs.discovered_facts) - 5} more")
+            lines.append(f"  ... {t('facts_more', lang, n=str(len(gs.discovered_facts) - 5))}")
 
     return "\n".join(lines)
-
-
-def format_timeline(engine: GameEngine) -> str:
-    return engine.get_event_timeline()
 
 
 def format_timeline_html(engine: GameEngine) -> str:
@@ -419,15 +458,14 @@ def create_app() -> gr.Blocks:
     with gr.Blocks(title="TimeLoop: The Unspeakable Midnight", theme=THEME, css=CSS) as app:
 
         # -- Title --
-        gr.Markdown(
-            "# TimeLoop: The Unspeakable Midnight\n\n"
-            "A Lovecraftian time-loop text adventure",
+        title_md = gr.Markdown(
+            f"# {t('app_title', 'en')}\n\n{t('app_subtitle', 'en')}",
             elem_classes="game-title",
         )
 
-        # -- Info bar (sanity + time + location) --
+        # -- Info bar --
         info_bar = gr.HTML(
-            value='<div class="info-bar"><span>Press New Game to begin</span></div>',
+            value=f'<div class="info-bar"><span>{t("press_new_game", "en")}</span></div>',
         )
 
         # -- Main layout: [sidebar | narration center] --
@@ -436,12 +474,22 @@ def create_app() -> gr.Blocks:
             # === Left sidebar: Status ===
             with gr.Column(scale=1, min_width=220):
                 with gr.Row():
-                    new_game_btn = gr.Button("New Game", variant="primary", elem_classes="ctrl-btn", size="sm")
-                    restart_loop_btn = gr.Button("Restart Loop", variant="secondary", elem_classes="ctrl-btn", size="sm")
+                    new_game_btn = gr.Button(
+                        t("btn_new_game", "en"), variant="primary",
+                        elem_classes="ctrl-btn", size="sm",
+                    )
+                    restart_loop_btn = gr.Button(
+                        t("btn_restart_loop", "en"), variant="secondary",
+                        elem_classes="ctrl-btn", size="sm",
+                    )
+                    lang_toggle_btn = gr.Button(
+                        "中", variant="secondary",
+                        elem_classes="ctrl-btn lang-btn", size="sm",
+                    )
 
                 status_display = gr.Textbox(
                     value="",
-                    label="Status",
+                    label=t("label_status", "en"),
                     lines=16,
                     max_lines=20,
                     interactive=False,
@@ -451,7 +499,7 @@ def create_app() -> gr.Blocks:
             # === Center: Narration + Choices + Input ===
             with gr.Column(scale=3, min_width=500):
                 narration_display = gr.Markdown(
-                    value="*The salt wind howls outside. Press **New Game** to begin your investigation into Ravenhollow...*",
+                    value=t("opening_flavor", "en"),
                     elem_classes="narration-panel",
                 )
 
@@ -462,56 +510,90 @@ def create_app() -> gr.Blocks:
 
                 with gr.Row():
                     player_input = gr.Textbox(
-                        placeholder="Or type your own action...",
+                        placeholder=t("input_placeholder", "en"),
                         label="",
                         show_label=False,
                         scale=5,
                         elem_classes="input-area",
                     )
-                    submit_btn = gr.Button("Act", variant="primary", scale=1, elem_classes="act-btn")
+                    submit_btn = gr.Button(
+                        t("btn_act", "en"), variant="primary",
+                        scale=1, elem_classes="act-btn",
+                    )
 
-        # -- Horizontal event timeline (full width, below main area) --
+        # -- Horizontal event timeline --
         with gr.Column(elem_classes="timeline-section"):
             event_timeline_display = gr.HTML(
-                value='<div class="tl-track" style="justify-content:center;"><span style="color:#4b5563;font-size:12px;">Press New Game to begin</span></div>',
+                value=f'<div class="tl-track" style="justify-content:center;"><span style="color:#4b5563;font-size:12px;">{t("timeline_empty", "en")}</span></div>',
                 elem_classes="timeline-wrap",
             )
 
         # -- Debug accordion --
-        with gr.Accordion("Debug Panel", open=False, elem_classes="debug-accordion"):
+        with gr.Accordion(t("debug_panel", "en"), open=False, elem_classes="debug-accordion"):
             with gr.Row():
-                debug_intent = gr.Textbox(label="Intent", interactive=False)
-                debug_sanity_delta = gr.Textbox(label="Sanity Change", interactive=False)
-            debug_consistency = gr.Textbox(label="Consistency Log", lines=3, interactive=False)
-            debug_state_json = gr.JSON(label="Full State")
+                debug_intent = gr.Textbox(label=t("debug_intent", "en"), interactive=False)
+                debug_sanity_delta = gr.Textbox(label=t("debug_sanity_change", "en"), interactive=False)
+            debug_consistency = gr.Textbox(label=t("debug_consistency", "en"), lines=3, interactive=False)
+            debug_state_json = gr.JSON(label=t("debug_state", "en"))
 
         # -- State --
         choice_state = gr.State(value=[])
+        lang_state = gr.State(value="en")
 
         # -- Handlers --
-        def on_new_game():
+        def on_new_game(lang):
+            engine.lang = lang
             result = manager.start_new_game()
-            return _update_ui(result, engine)
+            return _update_ui(result, engine, lang)
 
-        def on_restart_loop():
+        def on_restart_loop(lang):
+            engine.lang = lang
             result = manager.force_restart_loop()
-            return _update_ui(result, engine)
+            return _update_ui(result, engine, lang)
 
-        def on_submit(text, choices_data):
+        def on_submit(text, choices_data, lang):
             if not text.strip():
                 return _no_change()
+            engine.lang = lang
             result = manager.handle_input(text.strip())
-            return _update_ui(result, engine)
+            return _update_ui(result, engine, lang)
 
-        def on_choice_click(idx, choices_data):
+        def on_choice_click(idx, choices_data, lang):
             if not choices_data or idx >= len(choices_data):
                 return _no_change()
             choice = choices_data[idx]
             text = choice.get("text", choice.get("id", "continue"))
+            engine.lang = lang
             result = manager.handle_input(text)
-            return _update_ui(result, engine)
+            return _update_ui(result, engine, lang)
 
-        outputs = [
+        def on_lang_toggle(current_lang):
+            new_lang = "zh" if current_lang == "en" else "en"
+            engine.lang = new_lang
+            toggle_label = "EN" if new_lang == "zh" else "中"
+
+            updates = [
+                new_lang,
+                gr.update(value=toggle_label),
+                gr.update(value=f"# {t('app_title', new_lang)}\n\n{t('app_subtitle', new_lang)}"),
+                gr.update(value=t("btn_new_game", new_lang)),
+                gr.update(value=t("btn_restart_loop", new_lang)),
+                gr.update(value=t("btn_act", new_lang)),
+                gr.update(placeholder=t("input_placeholder", new_lang)),
+            ]
+
+            if engine.game_state:
+                updates.append(format_info_bar(engine, new_lang))
+                updates.append(format_status(engine, new_lang))
+                updates.append(format_timeline_html(engine))
+            else:
+                updates.append(f'<div class="info-bar"><span>{t("press_new_game", new_lang)}</span></div>')
+                updates.append("")
+                updates.append(f'<div class="tl-track" style="justify-content:center;"><span style="color:#4b5563;font-size:12px;">{t("timeline_empty", new_lang)}</span></div>')
+
+            return tuple(updates)
+
+        game_outputs = [
             info_bar,
             narration_display,
             status_display,
@@ -527,22 +609,36 @@ def create_app() -> gr.Blocks:
             choice_state,
         ]
 
-        new_game_btn.click(on_new_game, outputs=outputs)
-        restart_loop_btn.click(on_restart_loop, outputs=outputs)
-        submit_btn.click(on_submit, inputs=[player_input, choice_state], outputs=outputs)
-        player_input.submit(on_submit, inputs=[player_input, choice_state], outputs=outputs)
+        new_game_btn.click(on_new_game, inputs=[lang_state], outputs=game_outputs)
+        restart_loop_btn.click(on_restart_loop, inputs=[lang_state], outputs=game_outputs)
+        submit_btn.click(on_submit, inputs=[player_input, choice_state, lang_state], outputs=game_outputs)
+        player_input.submit(on_submit, inputs=[player_input, choice_state, lang_state], outputs=game_outputs)
 
         def make_choice_handler(idx):
-            def handler(choices_data):
-                return on_choice_click(idx, choices_data)
+            def handler(choices_data, lang):
+                return on_choice_click(idx, choices_data, lang)
             return handler
 
         for i, btn in enumerate([choice_btn_1, choice_btn_2, choice_btn_3]):
             btn.click(
                 make_choice_handler(i),
-                inputs=[choice_state],
-                outputs=outputs,
+                inputs=[choice_state, lang_state],
+                outputs=game_outputs,
             )
+
+        lang_toggle_outputs = [
+            lang_state,
+            lang_toggle_btn,
+            title_md,
+            new_game_btn,
+            restart_loop_btn,
+            submit_btn,
+            player_input,
+            info_bar,
+            status_display,
+            event_timeline_display,
+        ]
+        lang_toggle_btn.click(on_lang_toggle, inputs=[lang_state], outputs=lang_toggle_outputs)
 
     return app
 
@@ -551,15 +647,15 @@ def create_app() -> gr.Blocks:
 # UI update helpers
 # =====================================================================
 
-def _update_ui(result: TurnResult, engine: GameEngine):
-    narration = format_narration(result)
+def _update_ui(result: TurnResult, engine: GameEngine, lang: str = "en"):
+    narration = format_narration(result, lang)
     if result.is_ending:
         icon = "---" if result.ending_id in ("sinking_into_the_deep", "sanity_break") else "***"
         title = result.ending_id.replace("_", " ").title()
         narration += f"\n\n{icon}\n\n## {title}\n\n{result.ending_text}"
 
-    info_html = format_info_bar(engine)
-    status = format_status(engine)
+    info_html = format_info_bar(engine, lang)
+    status = format_status(engine, lang)
     timeline = format_timeline_html(engine)
 
     choices = result.choices or []
