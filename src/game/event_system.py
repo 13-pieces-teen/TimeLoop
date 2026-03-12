@@ -158,23 +158,111 @@ class EventSystem:
         return True
 
     def format_timeline(self, game_state: GameState) -> str:
-        """Format the timeline for display in the UI."""
+        """Format the timeline as plain text fallback."""
         timeline = self.get_timeline(game_state)
         current_act = 0
         lines = []
-
         for item in timeline:
             if item["act"] != current_act and item["act"] != 0:
                 current_act = item["act"]
                 lines.append(f"\n--- Act {current_act} ---")
-
-            if item["status"] == "completed":
-                icon = "[x]"
-            elif item["status"] == "available":
-                icon = "[>]"
-            else:
-                icon = "[ ]"
-
+            icon = {"completed": "[x]", "available": "[>]"}.get(item["status"], "[ ]")
             lines.append(f"{icon} {item['title_zh']}")
-
         return "\n".join(lines)
+
+    def format_timeline_html(self, game_state: GameState) -> str:
+        """Render the timeline as a horizontal flow with fog-of-war."""
+        timeline = self.get_timeline(game_state)
+        ACT_ROMAN = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V"}
+
+        acts: dict[int, list[dict]] = {}
+        for item in timeline:
+            acts.setdefault(item["act"], []).append(item)
+
+        reached_act = 1
+        for item in timeline:
+            if item["status"] in ("completed", "available"):
+                reached_act = max(reached_act, item["act"])
+
+        html = ['<div class="tl-track">']
+
+        sorted_acts = sorted(acts.keys())
+        for act_idx, act_num in enumerate(sorted_acts):
+            if act_num == 0:
+                continue
+            events = acts[act_num]
+            is_revealed = act_num <= reached_act
+            is_future = act_num > reached_act
+
+            act_has_completed = any(e["status"] == "completed" for e in events)
+            act_has_available = any(e["status"] == "available" for e in events)
+            if act_has_completed:
+                act_cls = "tl-act-done"
+            elif act_has_available:
+                act_cls = "tl-act-current"
+            else:
+                act_cls = "tl-act-locked"
+
+            roman = ACT_ROMAN.get(act_num, str(act_num))
+            html.append(
+                f'<div class="tl-act-group">'
+                f'<div class="tl-act-label {act_cls}">ACT {roman}</div>'
+                f'<div class="tl-events">'
+            )
+
+            for i, ev in enumerate(events):
+                status = ev["status"]
+
+                if is_future:
+                    html.append(
+                        '<div class="tl-node tl-fog">'
+                        '<div class="tl-dot tl-dot-locked"></div>'
+                        '<div class="tl-card tl-card-locked">'
+                        '<div class="tl-lock">&#x1f512;</div>'
+                        '</div>'
+                        '</div>'
+                    )
+                elif status == "completed":
+                    html.append(
+                        f'<div class="tl-node">'
+                        f'<div class="tl-dot tl-dot-done">'
+                        f'<svg width="10" height="10" viewBox="0 0 10 10">'
+                        f'<polyline points="2,5 4.5,7.5 8,2.5" fill="none" '
+                        f'stroke="#0b0e17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+                        f'</svg></div>'
+                        f'<div class="tl-card tl-card-done">'
+                        f'<div class="tl-title">{ev["title_zh"]}</div>'
+                        f'<div class="tl-sub">{ev["title"]}</div>'
+                        f'</div></div>'
+                    )
+                elif status == "available":
+                    html.append(
+                        f'<div class="tl-node">'
+                        f'<div class="tl-dot tl-dot-active"></div>'
+                        f'<div class="tl-card tl-card-active">'
+                        f'<div class="tl-title">{ev["title_zh"]}</div>'
+                        f'<div class="tl-sub">{ev["title"]}</div>'
+                        f'</div></div>'
+                    )
+                else:
+                    html.append(
+                        f'<div class="tl-node">'
+                        f'<div class="tl-dot tl-dot-pending"></div>'
+                        f'<div class="tl-card tl-card-pending">'
+                        f'<div class="tl-title">{ev["title_zh"]}</div>'
+                        f'<div class="tl-sub">{ev["title"]}</div>'
+                        f'</div></div>'
+                    )
+
+                if i < len(events) - 1:
+                    line_cls = "tl-line-done" if status == "completed" else "tl-line-dim"
+                    html.append(f'<div class="tl-line {line_cls}"></div>')
+
+            html.append('</div></div>')
+
+            if act_idx < len(sorted_acts) - 1:
+                bridge_cls = "tl-bridge-done" if is_revealed and act_has_completed else "tl-bridge-dim"
+                html.append(f'<div class="tl-bridge {bridge_cls}"></div>')
+
+        html.append('</div>')
+        return "".join(html)
