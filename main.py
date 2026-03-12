@@ -1,6 +1,7 @@
 """TimeLoop: The Unspeakable Midnight -- Entry Point"""
 
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -18,4 +19,5 @@ from src.ui.app import create_app
 
 if __name__ == "__main__":
     app = create_app()
-    app.launch(share=False, server_name="0.0.0.0", server_port=7860)
+    port = int(os.environ.get("PORT", 7860))
+    app.launch(share=False, server_name="0.0.0.0", server_port=port)
