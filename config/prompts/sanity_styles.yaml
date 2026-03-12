@@ -1,0 +1,82 @@
+styles:
+  lucid:
+    range: [80, 100]
+    name: "Lucid"
+    directive: >
+      Write in a grounded, realistic style. Descriptions are clear, factual,
+      and anchored in sensory detail. The world feels normal -- an old New
+      England coastal town with its own character and history. Use precise,
+      concrete language. Atmosphere comes from the setting itself: salt air,
+      creaking wood, dim gaslight. Any unease should be purely situational
+      (you're investigating a disappearance), not supernatural.
+
+    example: >
+      The dock planks groan under your weight. Three fishing boats are
+      moored at the far end, their hulls dark with barnacles. Old Silas
+      sits on an overturned crate, his gnarled fingers working a fraying
+      net. He doesn't look up as you approach.
+
+  uneasy:
+    range: [50, 79]
+    name: "Uneasy"
+    directive: >
+      Introduce subtle wrongness. The world is still mostly normal, but
+      details are slightly off. Shadows don't match their sources. Sounds
+      have faint echoes. Descriptions should plant seeds of doubt without
+      confirming anything supernatural. The player should feel that
+      something is wrong but be unable to articulate what. Use occasional
+      sensory contradictions (warm seawater, shadows that move against
+      the wind). NPCs may have brief moments of odd behavior they don't
+      acknowledge.
+
+    example: >
+      The dock planks groan under your weight -- a deeper sound than wood
+      should make. The fishing boats rock in a rhythm that doesn't quite
+      match the waves. Old Silas works his net, and for a moment the knots
+      he ties look almost like... symbols? He looks up, and you could swear
+      his milky eye focused on you before the good one did.
+
+  distorted:
+    range: [20, 49]
+    name: "Distorted"
+    directive: >
+      Reality is fracturing. Mix hallucination with truth so the player
+      cannot easily tell them apart. Use synesthesia (hearing colors,
+      tasting sounds), impossible geometry (rooms that are larger inside,
+      corridors that loop), and unreliable narration (describe something,
+      then subtly contradict it). Some NPC dialogue may not be real --
+      perhaps the NPC said something else entirely. Time feels elastic.
+      Environmental descriptions should evoke cosmic scale -- the smallness
+      of humans against something vast and incomprehensible.
+
+    example: >
+      The dock extends further than you remember -- did it always reach
+      this far into the water? The boats aren't rocking anymore; they're
+      breathing. Silas's net is finished, and it forms a pattern you
+      recognize from the church windows. 'You hear it now,' he says, or
+      perhaps he says nothing and the words come from the water itself.
+      The planks beneath your feet are warm.
+
+  madness:
+    range: [0, 19]
+    name: "Madness"
+    directive: >
+      Full cosmic horror. The narrator is unreliable. Reality has collapsed
+      into something fluid and terrifying. Language becomes dense, archaic,
+      almost poetic. Break the fourth wall subtly -- acknowledge the loop,
+      the player's repeated attempts, the futility or necessity of their
+      actions. The boundary between the player character, the narrator, and
+      the entity blurs. Descriptions should evoke awe as much as horror --
+      this is Lovecraftian sublime, not gore. Use run-on sentences, nested
+      clauses, and language that feels like it's trying to describe
+      something human language wasn't designed for.
+
+    example: >
+      There is no dock. There has never been a dock. What you are standing
+      on is the calcified dream of something that sleeps beneath seven
+      miles of black water, and it is dreaming of you standing on a dock,
+      and so here you are. Silas is not a man; he is a memory the sea
+      keeps of when men were new. His net catches nothing because there is
+      nothing to catch -- the fish left when the singing started, and the
+      singing started when you arrived, and you arrived because the singing
+      started. Listen. Can you hear your name in it? You always could.

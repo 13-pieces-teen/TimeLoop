@@ -1,0 +1,157 @@
+endings:
+  bad_end:
+    id: "sinking_into_the_deep"
+    title: "Sinking Into the Deep"
+    conditions:
+      any_of:
+        - "entered_caves AND NOT (possess ritual_candle OR possess lighthouse_lens)"
+        - "sanity <= 0"
+        - "turn >= max_turns AND location == caves"
+    narration: >
+      The inner chamber opens before you, vast and lightless. The carvings
+      on the walls are moving now -- you're certain of it. The water is
+      rising, warm as blood, and in its depths something immense shifts
+      and turns. You understand, finally, what Elias understood too late:
+      you were never investigating the mystery. You were answering a call.
+      The water closes over your head. The last thing you hear is not
+      drowning, but singing. It is the most beautiful thing you have ever
+      heard. The loop does not reset. You are home.
+
+  normal_end:
+    id: "the_seal_endures"
+    title: "The Seal Endures"
+    conditions:
+      all_of:
+        - "flag morrison_allied == true"
+        - "possess ritual_candle"
+        - "location == caves"
+        - "NOT flag eleanor_ritual_known"
+    narration: >
+      Morrison's voice rises in the ancient chant, his hands steady for
+      the first time since you've known him. The candle flame burns with
+      a light that is not fire. The carvings on the walls pulse once,
+      twice, and then go still. The water recedes. The whispers fade to
+      silence. It is done -- for another thirty years. Morrison looks at
+      you with eyes full of gratitude and grief. 'Your friend,' he says
+      quietly, 'died to protect this secret. Honor that.' You leave
+      Ravenhollow at dawn, carrying a weight that no one will ever
+      understand. The loop breaks. Time moves forward. But some nights,
+      when the wind blows from the sea, you still hear it singing.
+
+  true_end:
+    id: "breaking_the_cycle"
+    title: "Breaking the Cycle"
+    conditions:
+      all_of:
+        - "flag eleanor_ritual_known == true"
+        - "possess lighthouse_lens"
+        - "discovered_fact elias_alternative_method"
+        - "location == caves"
+        - "sanity <= 40"
+    narration: >
+      Eleanor's hands are shaking as she positions the lighthouse lens.
+      Silas -- if he is here -- stands at the water's edge, humming a
+      melody that matches the whispers note for note. You hold the seal
+      fragment and speak the words Elias wrote in his final journal entry.
+      The lens catches a light that comes from nowhere -- from below --
+      and refracts it into a pattern that matches the cave carvings
+      exactly. For one moment, you see it: vast, ancient, dreaming. Not
+      malevolent. Just... vast. The seal locks permanently. The dreamer
+      settles deeper, content. The carvings fade. The whispers stop -- not
+      suppressed, but resolved, like a chord finding its root note. And
+      then the light takes your memories. You wake up on a train, heading
+      home to Boston. You don't remember why you left. There's a letter in
+      your pocket from someone named Elias, but you don't recognize the
+      name. The world is safe. You just don't remember saving it.
+
+decision_points:
+  - id: "forbidden_tome"
+    location: "library"
+    trigger: "eleanor trust >= 60 OR flag sneaked_restricted"
+    description: "Whether to read the forbidden tome"
+    options:
+      read:
+        effects:
+          - "sanity -= 20"
+          - "add_fact entity_nature_known"
+          - "add_fact ritual_details_known"
+          - "set_flag read_forbidden_tome true"
+        unlocks: "New dialogue options with Morrison and Eleanor"
+      refuse:
+        effects:
+          - "sanity += 5"
+        consequence: "Slower information gathering, Morrison route becomes primary"
+
+  - id: "trust_morrison_or_eleanor"
+    trigger: "discovered_fact ritual_details_known AND morrison.trust >= 50 AND eleanor.trust >= 50"
+    description: "Morrison and Eleanor offer contradictory interpretations of the ritual"
+    options:
+      trust_morrison:
+        effects:
+          - "set_flag morrison_allied true"
+          - "morrison.trust += 20"
+          - "eleanor.trust -= 10"
+        unlocks: "Church basement access, Morrison's route to caves"
+      trust_eleanor:
+        effects:
+          - "set_flag eleanor_allied true"
+          - "eleanor.trust += 20"
+          - "morrison.trust -= 10"
+        unlocks: "Eleanor's alternative ritual research"
+      neither:
+        effects: []
+        consequence: "Must find information independently (harder but possible)"
+
+  - id: "silas_revelation"
+    location: "docks"
+    trigger: "silas.trust >= 50"
+    description: "Silas offers to show you what lies beneath the water"
+    options:
+      look:
+        effects:
+          - "sanity -= 15 to -30 (based on current sanity)"
+          - "add_fact seen_the_entity"
+          - "add_fact caves_entrance_known"
+        unlocks: "Docks route to caves, unique dialogue with all NPCs"
+      refuse:
+        effects:
+          - "silas.trust -= 20"
+        consequence: "Must find caves through church or lighthouse"
+
+  - id: "enter_caves"
+    location: "caves"
+    trigger: "caves unlocked"
+    description: "The point of no return"
+    options:
+      enter_prepared:
+        conditions: "possess ritual_candle OR possess lighthouse_lens"
+        leads_to: "normal_end OR true_end (based on flags)"
+      enter_unprepared:
+        conditions: "NOT (possess ritual_candle OR possess lighthouse_lens)"
+        leads_to: "bad_end"
+      wait:
+        effects:
+          - "Spend remaining turns gathering more preparation"
+        consequence: "Risk running out of time in this loop"
+
+fact_dependencies:
+  - fact: "elias_visited_library"
+    sources: ["martha (trust >= 30)", "library (examine guest book)"]
+
+  - fact: "ritual_happens_every_30_years"
+    sources: ["morrison (trust >= 50)", "forbidden_tome", "elias_journal"]
+
+  - fact: "martha_husband_missing"
+    sources: ["martha (trust >= 50)", "inn_guest_ledger"]
+
+  - fact: "entity_nature_known"
+    sources: ["forbidden_tome", "elias_journal", "silas (trust >= 70)"]
+
+  - fact: "caves_entrance_known"
+    sources: ["silas (trust >= 50)", "thomas_envelope map", "lighthouse observation"]
+
+  - fact: "elias_alternative_method"
+    sources: ["elias_journal AND eleanor (trust >= 90)"]
+
+  - fact: "elias_locked_by_morrison"
+    sources: ["morrison (trust >= 90)", "lighthouse (find evidence)"]

@@ -1,0 +1,50 @@
+rules:
+  - id: "dead_npcs_cannot_speak"
+    description: "Characters who are dead or missing cannot appear in dialogue"
+    check: "If any NPC has alive=false, they must not appear as dialogue speaker"
+    severity: "critical"
+
+  - id: "item_uniqueness"
+    description: "Used/consumed items cannot be used again"
+    check: "Items removed from inventory must not reappear"
+    severity: "critical"
+
+  - id: "location_knowledge"
+    description: "Cannot reference interior details of unvisited locations"
+    check: "Narration must not describe interiors of locations the player has not visited"
+    severity: "high"
+
+  - id: "npc_location_consistency"
+    description: "NPCs must be at their designated locations"
+    check: "Dialogue can only occur with NPCs at the player's current location"
+    severity: "critical"
+
+  - id: "locked_area_access"
+    description: "Locked locations require their unlock conditions to be met"
+    check: "Player cannot enter locked locations without meeting unlock_condition"
+    severity: "critical"
+
+  - id: "trust_gated_information"
+    description: "NPCs must not reveal information above their current trust threshold"
+    check: "NPC dialogue content must match the trust level bracket"
+    severity: "high"
+
+  - id: "fact_consistency"
+    description: "Established facts cannot be contradicted"
+    check: "New narration must not contradict entries in discovered_facts"
+    severity: "critical"
+
+  - id: "time_progression"
+    description: "Time must move forward within a loop"
+    check: "Game time must not go backwards within the same loop"
+    severity: "high"
+
+  - id: "sanity_bounds"
+    description: "Sanity must remain within 0-100"
+    check: "Sanity value must be clamped to [0, 100] after every update"
+    severity: "critical"
+
+  - id: "loop_memory_persistence"
+    description: "Discovered facts must persist across loops"
+    check: "Facts in loop_memory.discovered_facts must never be removed"
+    severity: "critical"

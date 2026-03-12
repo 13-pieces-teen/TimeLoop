@@ -1,0 +1,407 @@
+events:
+  # ===== ACT 1: ARRIVAL (Turn 1-3) =====
+  - id: "arrival"
+    act: 1
+    title: "Arrival at Ravenhollow"
+    title_zh: "抵达雷文霍洛"
+    trigger:
+      auto: true  # fires on game start
+    narration: >
+      The evening coach deposits you at the edge of Ravenhollow with a creak
+      of brakes and a curt nod from the driver. He doesn't linger. The salt
+      wind cuts through your coat as you survey the town: a handful of
+      weathered buildings huddled against the cliff, a church steeple black
+      against the dying light, and the sea -- vast, dark, and restless.
+      The Sea Breeze Inn stands before you, its windows glowing amber.
+      Elias's letter crinkles in your pocket. Three weeks of silence.
+      You push open the door.
+    effects:
+      - {type: "move_player", location: "inn"}
+    choices:
+      - {id: "greet_martha", text: "Approach the innkeeper", sanity_cost: 0}
+      - {id: "read_letter", text: "Re-read Elias's letter carefully", sanity_cost: 0}
+      - {id: "look_around_inn", text: "Observe the common room", sanity_cost: 0}
+
+  - id: "martha_intro"
+    act: 1
+    title: "Meeting Martha"
+    title_zh: "与玛莎初见"
+    trigger:
+      location: "inn"
+      min_turn: 1
+      not_flag: "martha_introduced"
+    narration: >
+      The woman behind the counter looks up with a smile that's warm but
+      doesn't quite reach her eyes. She's stout, with calloused hands and
+      an apron that's perpetually damp. A silver locket rests against her
+      collarbone -- she touches it unconsciously as she speaks.
+    dialogue:
+      speaker: "Martha Holloway"
+      text: >
+        Welcome, dear! You must be frozen through. Come in, come in.
+        I've got stew on the fire and a room upstairs with clean sheets.
+        We don't get many visitors these days... not since -- well.
+        What brings you to Ravenhollow?
+    effects:
+      - {type: "set_flag", key: "martha_introduced", value: true}
+      - {type: "update_trust", npc: "martha", delta: 15}
+    choices:
+      - {id: "ask_about_elias", text: "I'm looking for my friend, Dr. Elias Webb", sanity_cost: 0}
+      - {id: "ask_about_town", text: "Tell me about the town", sanity_cost: 0}
+      - {id: "just_room", text: "Just a room for the night, please", sanity_cost: 0}
+
+  - id: "mention_elias_to_martha"
+    act: 1
+    title: "Martha Recognizes Elias's Name"
+    title_zh: "玛莎认出了伊莱亚斯的名字"
+    trigger:
+      location: "inn"
+      flag: "martha_introduced"
+      not_flag: "martha_knows_elias_search"
+      any_input_keyword: ["elias", "webb", "friend", "missing", "looking for"]
+    narration: >
+      Martha's hands freeze mid-wipe. The cloth she's holding drips onto
+      the counter. For just a moment, something flickers across her face
+      -- recognition, and then something colder. Fear.
+    dialogue:
+      speaker: "Martha Holloway"
+      text: >
+        Elias? Oh... oh yes, the scholar. He stayed here for about a week,
+        always coming and going at odd hours, asking questions. Nice enough
+        man, if a bit... intense. He left one morning and didn't come back.
+        I assumed he'd moved on. That was... three weeks ago now, wasn't it?
+    effects:
+      - {type: "set_flag", key: "martha_knows_elias_search", value: true}
+      - {type: "add_fact", fact: "elias_stayed_at_inn"}
+      - {type: "add_fact", fact: "elias_disappeared_three_weeks_ago"}
+      - {type: "update_trust", npc: "martha", delta: 10}
+    choices:
+      - {id: "press_martha", text: "She seems afraid. Press her gently for more details.", sanity_cost: 0}
+      - {id: "ask_directions", text: "Where did he spend his time? Who did he talk to?", sanity_cost: 0}
+      - {id: "explore_town", text: "Thank her and head out to investigate the town", sanity_cost: 0}
+
+  # ===== ACT 2: INVESTIGATION (Turn 3-6) =====
+  - id: "visit_library"
+    act: 2
+    title: "The Restricted Section"
+    title_zh: "禁区书架"
+    trigger:
+      location: "library"
+      not_flag: "library_visited"
+    narration: >
+      The library is smaller than you expected -- a single stone room
+      crammed with shelves that sag under the weight of old books. Dust
+      motes drift in the lamplight. At the back, a velvet rope cordons off
+      three shelves of older volumes. A hand-lettered sign reads:
+      'Private Collection -- Authorized Personnel Only.'
+      A young woman at the front desk looks up from her reading, pushing
+      wire-rimmed glasses up her nose.
+    dialogue:
+      speaker: "Eleanor Marsh"
+      text: >
+        Can I help you? We don't get many visitors to the library, especially
+        not at this hour. If you're looking for local history, I can point
+        you to the right shelf. If you're looking for anything... else,
+        I'm afraid I can't help you.
+    effects:
+      - {type: "set_flag", key: "library_visited", value: true}
+      - {type: "update_trust", npc: "eleanor", delta: 10}
+    choices:
+      - {id: "ask_eleanor_elias", text: "Ask if she knew Dr. Elias Webb", sanity_cost: 0}
+      - {id: "ask_restricted", text: "Ask about the restricted section", sanity_cost: 0}
+      - {id: "browse_history", text: "Browse the local history section", sanity_cost: 0}
+
+  - id: "visit_church"
+    act: 2
+    title: "The Stained Glass Saints"
+    title_zh: "彩窗中的圣徒"
+    trigger:
+      location: "church"
+      not_flag: "church_visited"
+    narration: >
+      St. Andrew's Church looms above the harbor, its granite walls
+      black with age and salt spray. Inside, rows of empty pews face an
+      altar lit by a single candelabra. The stained glass windows catch
+      the last of the evening light -- but something is wrong with the
+      images. The saints are depicted surrounded by sea creatures, their
+      faces turned not toward heaven but toward the water. One window
+      shows a figure descending into waves, arms outstretched in what
+      might be prayer or surrender.
+    dialogue:
+      speaker: "Father Morrison"
+      text: >
+        Good evening, my child. You're new to Ravenhollow. I can always
+        tell -- outsiders have a certain... restlessness about them.
+        This is a place of peace, I assure you. How may I serve?
+    effects:
+      - {type: "set_flag", key: "church_visited", value: true}
+      - {type: "update_trust", npc: "morrison", delta: 10}
+    choices:
+      - {id: "ask_windows", text: "Ask about the unusual stained glass windows", sanity_cost: 0}
+      - {id: "ask_morrison_elias", text: "Ask if he knew Dr. Elias Webb", sanity_cost: 0}
+      - {id: "ask_town_history", text: "Ask about the town's founding history", sanity_cost: 0}
+
+  - id: "visit_docks"
+    act: 2
+    title: "The Old Fisherman"
+    title_zh: "码头上的老渔夫"
+    trigger:
+      location: "docks"
+      not_flag: "docks_visited"
+    narration: >
+      The docks creak and groan beneath your feet. Three fishing boats
+      rock at their moorings, but none of them look seaworthy -- peeling
+      paint, fraying ropes. The air is thick with brine and something
+      else, something organic and deep, like the smell of the ocean floor
+      brought to the surface. An old man sits on an overturned crate at
+      the pier's end, his gnarled fingers working a net that seems to
+      have no beginning and no end.
+    dialogue:
+      speaker: "Old Silas"
+      text: >
+        Another one come to listen, eh? Or come to look? Makes no
+        difference. The sea don't care why you're here. She only cares
+        that you came.
+    effects:
+      - {type: "set_flag", key: "docks_visited", value: true}
+      - {type: "update_trust", npc: "silas", delta: 10}
+    choices:
+      - {id: "ask_silas_whispers", text: "Ask about the 'whispers from the sea'", sanity_cost: -5}
+      - {id: "ask_silas_boats", text: "Ask why no one seems to be fishing", sanity_cost: 0}
+      - {id: "observe_water", text: "Walk to the edge of the pier and look down", sanity_cost: -5}
+
+  # ===== ACT 3: REVELATIONS (Trust-gated) =====
+  - id: "martha_husband"
+    act: 3
+    title: "Martha's Secret"
+    title_zh: "玛莎的秘密"
+    trigger:
+      location: "inn"
+      npc_trust: {martha: 40}
+      not_flag: "martha_husband_revealed"
+    narration: >
+      Martha's composure finally cracks. She sets down the cup she's been
+      polishing -- her hands are shaking -- and sinks into the chair
+      across from you. The locket at her throat catches the firelight.
+    dialogue:
+      speaker: "Martha Holloway"
+      text: >
+        You want to know the truth? Fine. My Thomas... he started hearing
+        things. From the sea, he said. A song, he called it. Beautiful,
+        he said, like nothing he'd ever heard. He started going to the
+        docks at night. Then one morning, six months ago, his side of the
+        bed was cold. He was just... gone. Like your friend. Like the
+        others before them. They all hear it eventually, the ones who
+        stay too long.
+    effects:
+      - {type: "set_flag", key: "martha_husband_revealed", value: true}
+      - {type: "add_fact", fact: "thomas_holloway_heard_whispers"}
+      - {type: "add_fact", fact: "thomas_holloway_missing_six_months"}
+      - {type: "add_fact", fact: "multiple_people_have_disappeared"}
+    choices:
+      - {id: "ask_locket", text: "Ask about the locket she keeps touching", sanity_cost: 0}
+      - {id: "ask_others", text: "What 'others'? How many people have disappeared?", sanity_cost: 0}
+      - {id: "comfort_martha", text: "Reach across the table and take her hand", sanity_cost: 0}
+
+  - id: "eleanor_confession"
+    act: 3
+    title: "Eleanor's Guilt"
+    title_zh: "埃莉诺的愧疚"
+    trigger:
+      location: "library"
+      npc_trust: {eleanor: 50}
+      fact_required: "elias_stayed_at_inn"
+      not_flag: "eleanor_confessed"
+    narration: >
+      Eleanor closes the library door and turns the lock. Her hands are
+      trembling. She pulls a chair close to yours and speaks in a rapid
+      whisper, words tumbling out as if she's been holding them back for
+      weeks.
+    dialogue:
+      speaker: "Eleanor Marsh"
+      text: >
+        I helped him. Elias. I gave him access to the restricted section
+        -- the books my grandmother kept. He was so excited, said he'd
+        found proof of something incredible. A pattern, every thirty years.
+        And then Morrison found out, and... I should have warned him. I
+        should have told him to leave. Now he's gone and it's my fault.
+        I have to show you something. The books he was reading. And the
+        key -- my grandmother's key to the lighthouse.
+    effects:
+      - {type: "set_flag", key: "eleanor_confessed", value: true}
+      - {type: "add_fact", fact: "eleanor_helped_elias"}
+      - {type: "add_fact", fact: "elias_found_thirty_year_pattern"}
+      - {type: "add_item", item: "lighthouse_key"}
+      - {type: "set_flag", key: "lighthouse_unlocked", value: true}
+    choices:
+      - {id: "read_forbidden", text: "Read the forbidden books Elias was studying", sanity_cost: -20}
+      - {id: "ask_grandmother", text: "Tell me about your grandmother", sanity_cost: 0}
+      - {id: "go_lighthouse", text: "Take the key and head to the lighthouse immediately", sanity_cost: 0}
+
+  - id: "forbidden_tome"
+    act: 3
+    title: "The Forbidden Tome"
+    title_zh: "禁忌之书"
+    trigger:
+      location: "library"
+      flag: "eleanor_confessed"
+      not_flag: "read_forbidden_tome"
+      any_input_keyword: ["read", "book", "tome", "forbidden", "restricted"]
+    narration: >
+      The book is bound in leather that feels wrong -- too warm, too
+      supple, as if it were still alive. The text inside shifts between
+      Latin, Greek, and a language you don't recognize but somehow
+      understand. It describes a being that sleeps beneath the bay, older
+      than the bedrock itself, dreaming in a frequency that human minds
+      translate as whispers. Every thirty years, the dream grows restless,
+      and the town must perform a ritual to deepen the sleep. A ritual
+      that requires a sacrifice.
+    effects:
+      - {type: "set_flag", key: "read_forbidden_tome", value: true}
+      - {type: "add_fact", fact: "entity_sleeps_beneath_bay"}
+      - {type: "add_fact", fact: "ritual_requires_sacrifice"}
+      - {type: "add_fact", fact: "ritual_happens_every_30_years"}
+    sanity_impact: -20
+    choices:
+      - {id: "keep_reading", text: "Keep reading -- there must be an alternative", sanity_cost: -10}
+      - {id: "confront_morrison", text: "Take this to Father Morrison and demand answers", sanity_cost: 0}
+      - {id: "tell_eleanor", text: "Show Eleanor what you've found", sanity_cost: 0}
+
+  - id: "morrison_truth"
+    act: 3
+    title: "Morrison's Confession"
+    title_zh: "莫里森的告白"
+    trigger:
+      location: "church"
+      npc_trust: {morrison: 60}
+      fact_required: "ritual_happens_every_30_years"
+      not_flag: "morrison_confessed"
+    narration: >
+      Morrison's hands stop trembling for the first time. He sets down
+      his rosary and meets your eyes. When he speaks, his voice is barely
+      a whisper, but every word is clear.
+    dialogue:
+      speaker: "Father Morrison"
+      text: >
+        Thirty years ago, I performed the ritual. The sacrifice was a
+        fisherman named Arthur Crane. He went willingly -- he said the
+        singing was too beautiful to resist. I told myself it was God's
+        work. I've told myself that every night since. But your friend
+        Elias... he found another way. He said the lighthouse could focus
+        the seal, make it permanent. I was afraid. I locked him in the
+        lighthouse to stop him. I don't know how he got out, or where
+        he went after. God forgive me.
+    effects:
+      - {type: "set_flag", key: "morrison_confessed", value: true}
+      - {type: "add_fact", fact: "morrison_performed_last_ritual"}
+      - {type: "add_fact", fact: "morrison_locked_elias_in_lighthouse"}
+      - {type: "add_fact", fact: "elias_found_alternative_method"}
+    choices:
+      - {id: "forgive", text: "Tell him you understand -- ask him to help make it right", sanity_cost: 0}
+      - {id: "condemn", text: "How could you? Take me to the lighthouse. Now.", sanity_cost: 0}
+      - {id: "ask_ritual", text: "The ritual is coming again. When?", sanity_cost: 0}
+
+  - id: "silas_truth"
+    act: 3
+    title: "What Silas Saw"
+    title_zh: "西拉斯目睹的真相"
+    trigger:
+      location: "docks"
+      npc_trust: {silas: 50}
+      not_flag: "silas_revealed"
+    narration: >
+      Silas sets down his net. For the first time, his eyes are clear
+      -- both of them, even the milky one. He pats the crate beside him.
+    dialogue:
+      speaker: "Old Silas"
+      text: >
+        Sit down. I'm going to tell you what I saw, and God help us both,
+        you'll believe me. Thirty years ago, I was on my boat when they
+        did the ritual. The water opened up -- I don't mean waves, I mean
+        it OPENED, like a door. And I saw it. Vast. Ancient. Dreaming.
+        It wasn't evil, boy. It was just... big. Bigger than evil, bigger
+        than good. It was dreaming us. This whole town, maybe the whole
+        coast. And the ritual -- it doesn't kill the dream. It just pushes
+        it back down. Every thirty years, we shove it back to sleep with
+        a life. But it doesn't have to be that way.
+    effects:
+      - {type: "set_flag", key: "silas_revealed", value: true}
+      - {type: "add_fact", fact: "entity_is_dreaming_not_evil"}
+      - {type: "add_fact", fact: "silas_witnessed_the_entity"}
+      - {type: "add_fact", fact: "caves_entrance_known"}
+    sanity_impact: -15
+    choices:
+      - {id: "ask_alternative", text: "What's the other way?", sanity_cost: 0}
+      - {id: "look_at_water", text: "Show me. Take me to see it.", sanity_cost: -15}
+      - {id: "ask_seal", text: "Do you still have a piece of the original seal?", sanity_cost: 0}
+
+  # ===== ACT 4: LIGHTHOUSE =====
+  - id: "lighthouse_discovery"
+    act: 4
+    title: "Elias's Journal"
+    title_zh: "伊莱亚斯的日记"
+    trigger:
+      location: "lighthouse"
+      flag: "lighthouse_unlocked"
+      not_flag: "found_elias_journal"
+    narration: >
+      The lighthouse door groans open. Scratched into the frame in Elias's
+      handwriting: 'THE LIGHT REVEALS.' The stairs spiral upward into
+      darkness. On the third landing, you find his workspace: papers
+      pinned to every surface, a star chart tacked to the ceiling, and
+      his journal open on the desk. The final entry is dated three weeks
+      ago. The handwriting deteriorates into symbols that match the cave
+      carvings in the books you've read.
+    effects:
+      - {type: "set_flag", key: "found_elias_journal", value: true}
+      - {type: "add_item", item: "elias_journal"}
+      - {type: "add_fact", fact: "elias_discovered_lens_ritual"}
+      - {type: "add_item", item: "lighthouse_lens"}
+    sanity_impact: -15
+    choices:
+      - {id: "read_journal", text: "Read the journal from beginning to end", sanity_cost: -10}
+      - {id: "take_lens", text: "Take the lighthouse lens -- Elias wrote it was the key", sanity_cost: 0}
+      - {id: "look_at_sea", text: "Use the lens to look out at the sea", sanity_cost: -20}
+
+  # ===== ACT 5: ENDGAME =====
+  - id: "caves_entrance"
+    act: 5
+    title: "Into the Deep"
+    title_zh: "深入深渊"
+    trigger:
+      location: "caves"
+      fact_required: "caves_entrance_known"
+    narration: >
+      The cave mouth opens at low tide, a wound in the cliff face.
+      Inside, the air changes -- warm, humid, tasting of salt and
+      something ancient. The walls are covered in carvings that predate
+      any known civilization. Your torch -- or the lighthouse lens --
+      casts light on symbols that seem to writhe at the edge of vision.
+      Ahead, the tunnel descends toward the sound of water. And beneath
+      the water, something else. A vibration you feel in your bones
+      rather than hear. The whispers are louder here. They are not
+      whispers. They are a song.
+    effects:
+      - {type: "set_flag", key: "entered_caves", value: true}
+    choices:
+      - {id: "go_deeper", text: "Press deeper toward the inner chamber", sanity_cost: -10}
+      - {id: "examine_carvings", text: "Study the wall carvings carefully", sanity_cost: -5}
+      - {id: "turn_back", text: "This isn't right. Turn back.", sanity_cost: 0}
+
+  # ===== MIDNIGHT =====
+  - id: "midnight_approaches"
+    act: 0
+    title: "The Bells Begin"
+    title_zh: "钟声将至"
+    trigger:
+      max_minutes_remaining: 30
+      not_flag: "midnight_warned"
+    narration: >
+      A distant bell tolls once -- a warning. You feel it in your chest
+      before you hear it. Eleven-thirty. The air grows heavier. Shadows
+      lengthen. Something in the town shifts, as if Ravenhollow itself
+      is holding its breath. You have thirty minutes before midnight.
+      Whatever you're going to do, do it now.
+    effects:
+      - {type: "set_flag", key: "midnight_warned", value: true}
+    choices: []

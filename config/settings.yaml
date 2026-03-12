@@ -1,0 +1,25 @@
+llm:
+  # Reads API key and base URL from .env file (see .env.example)
+  # Supports any OpenAI-compatible API: OpenAI, SiliconFlow, DeepSeek, etc.
+  model: "Qwen/Qwen2.5-32B-Instruct"  # SiliconFlow default; change as needed
+  base_url: ""                         # override from .env; leave empty to use env var
+  temperature: 0.7
+  max_tokens: 1024
+
+game:
+  max_turns_per_loop: 10
+  starting_sanity: 100
+  sanity_recovery_per_loop: 20
+  sanity_cap: 100
+  time_start: "8:00 PM"
+  time_per_turn_minutes: 30
+  midnight: "12:00 AM"
+
+consistency:
+  embedding_model: "all-MiniLM-L6-v2"
+  similarity_threshold: 0.75
+  max_retries: 2
+
+logging:
+  trajectory_dir: "logs"
+  log_level: "INFO"
