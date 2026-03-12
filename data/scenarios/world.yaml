@@ -1,0 +1,110 @@
+title: "The Unspeakable Midnight"
+setting: "Ravenhollow, a remote coastal town in New England, 1927"
+
+backstory: >
+  You are a folklore lecturer at Boston University. Three weeks ago, your
+  close friend Dr. Elias Webb traveled to the coastal town of Ravenhollow
+  to investigate what the local fishermen call "the whispers from beneath
+  the sea." He has not been heard from since. Armed with his last letter,
+  you arrive at the town at dusk. At midnight, when the church bells toll,
+  everything resets. You find yourself standing at the inn's doorstep once
+  more, clutching the same letter. Time is looping.
+
+locations:
+  inn:
+    name: "The Sea Breeze Inn"
+    description: "A weathered two-story building at the edge of town. The sign creaks in the salt wind. Inside, a fire crackles in the hearth and the smell of fish stew hangs in the air."
+    connected_to: ["library", "church", "docks"]
+    locked: false
+    npcs_present: ["martha"]
+    items_available: ["inn_guest_ledger"]
+    sanity_notes:
+      uneasy: "The fire casts long shadows that twist against the walls in ways that don't quite match the flames."
+      distorted: "The stew smells wrong tonight -- like brine and something older. The shadows on the wall are moving even when the fire is still."
+      madness: "This building breathes. You can feel it in the floorboards. Martha's smile has too many teeth, or perhaps you've simply never counted them before."
+
+  library:
+    name: "Ravenhollow Public Library"
+    description: "A small stone building crammed with dusty shelves. A section in the back is roped off -- 'Private Collection: Authorized Personnel Only.' Eleanor sits at the front desk, reading."
+    connected_to: ["inn", "lighthouse"]
+    locked: false
+    npcs_present: ["eleanor"]
+    items_available: ["local_history_book", "elias_library_card"]
+    key_interactions:
+      - "Reading the forbidden tome (requires Eleanor's trust >= 60 or sneaking)"
+      - "Finding Elias's research notes (hidden in the private collection)"
+    sanity_notes:
+      uneasy: "Some of the book titles seem to shift when you're not looking directly at them."
+      distorted: "The words on the pages you're reading are rearranging themselves. Or are they? You blink, and they're normal again. Were they always?"
+      madness: "The library extends infinitely in every direction. Shelves tower into darkness above. Eleanor hasn't blinked in eleven minutes. You know this because you've been counting."
+
+  church:
+    name: "St. Andrew's Church"
+    description: "A stern granite church overlooking the harbor. Stained glass windows depict scenes that seem oddly maritime for a Christian church -- sea creatures intertwined with saints. Father Morrison tends the altar."
+    connected_to: ["inn", "caves"]
+    locked: false
+    npcs_present: ["morrison"]
+    items_available: ["church_records", "ritual_candle"]
+    key_interactions:
+      - "Asking Morrison about the sealing ritual"
+      - "Examining the stained glass windows closely"
+      - "Accessing the church basement (requires Morrison's trust >= 70)"
+    sanity_notes:
+      uneasy: "The figures in the stained glass seem to follow you with their eyes. The maritime creatures look less like decorations and more like portraits."
+      distorted: "The saints in the glass are drowning. Their mouths are open. You can almost hear them. Morrison's prayers sound like they're in a language older than Latin."
+      madness: "The church is underwater. It has always been underwater. The stained glass is a window to the outside, and outside is the sea, and in the sea something vast is watching you pray."
+
+  docks:
+    name: "Ravenhollow Docks"
+    description: "Weathered wooden piers stretching into dark water. A few fishing boats rock gently. The air is thick with salt and the smell of seaweed. Old Silas sits on an overturned crate, mending a net that looks like it hasn't caught fish in years."
+    connected_to: ["inn", "caves"]
+    locked: false
+    npcs_present: ["silas"]
+    items_available: ["old_fishing_map", "strange_shell"]
+    key_interactions:
+      - "Listening to Silas's stories about the deep"
+      - "Looking into the water at the dock's edge (sanity check)"
+      - "Following Silas to his 'special spot' at low tide"
+    sanity_notes:
+      uneasy: "The water is darker than it should be at this hour. Something large moves beneath the surface -- probably just a fish."
+      distorted: "The boats are whispering to each other. The nets Silas mends form patterns -- symbols? -- that you almost recognize. The water at the pier's edge is warm."
+      madness: "The sea knows your name. It has always known your name. Silas is not mending a net; he is weaving a prayer. The things beneath the water are rising because you are here. You have always been here."
+
+  lighthouse:
+    name: "The Abandoned Lighthouse"
+    description: "A crumbling stone tower on the cliff north of town. Officially closed for years, but the door shows signs of recent entry. Elias's handwriting is scratched into the doorframe: 'THE LIGHT REVEALS.'"
+    connected_to: ["library"]
+    locked: true
+    unlock_condition: "Possess 'lighthouse_key' from Eleanor OR discovered_fact 'elias_lighthouse_clue'"
+    npcs_present: []
+    items_available: ["elias_journal", "star_chart", "lighthouse_lens"]
+    key_interactions:
+      - "Reading Elias's journal (major sanity cost, major information gain)"
+      - "Using the lighthouse lens to observe the sea at night"
+      - "Finding the passage to the caves from above"
+    sanity_notes:
+      uneasy: "The lighthouse beam, though broken, seems to cast light in directions that don't follow geometry."
+      distorted: "Elias's notes are written in his handwriting but the language keeps shifting. Some pages are wet with seawater despite being on the top floor. The star chart shows constellations that shouldn't exist."
+      madness: "You climb the lighthouse but it has no top. Or perhaps it has always been the bottom. Elias's journal is writing itself. The lens shows you not the sea but what lives beneath it, and it is looking back through the lens at you."
+
+  caves:
+    name: "The Tidal Caves"
+    description: "A network of sea caves accessible only at low tide from the docks, or through a hidden passage from the church basement. The walls are covered in carvings that predate any known civilization."
+    connected_to: ["church", "docks"]
+    locked: true
+    unlock_condition: "discovered_fact 'caves_entrance_known' AND (possess 'ritual_candle' OR possess 'lighthouse_lens')"
+    npcs_present: []
+    items_available: ["ancient_seal_fragment", "ritual_circle"]
+    key_interactions:
+      - "Examining the wall carvings"
+      - "Reaching the inner chamber (endgame trigger)"
+      - "Performing / disrupting the ritual"
+    sanity_notes:
+      uneasy: "The carvings seem to move in the torchlight. The tide pools reflect a sky that has too many stars."
+      distorted: "The walls are breathing. The carvings are a story about you. You can read them now because you have always been able to. The water in the caves is rising even though the tide charts say it shouldn't be."
+      madness: "You are inside something alive. The caves are not caves. They are the throat of the world. The carvings are not carvings; they are scars. It is waking up. It has always been waking up. You are the last bell before midnight."
+
+starting_inventory:
+  - id: "elias_letter"
+    name: "Elias's Last Letter"
+    description: "A hastily written letter from your friend. It mentions 'the whispers,' 'a ritual every 30 years,' and 'they won't let me leave.' The handwriting deteriorates toward the end."

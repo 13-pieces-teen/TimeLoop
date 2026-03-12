@@ -1,0 +1,201 @@
+npcs:
+  martha:
+    name: "Martha Holloway"
+    role: "Innkeeper"
+    location: "inn"
+    age: 52
+    appearance: "A stout woman with kind eyes and calloused hands. Her apron is always slightly damp. She wears a locket she never opens."
+
+    personality: >
+      Warm and motherly on the surface, but guarded. Deflects personal
+      questions with hospitality -- offers food, changes the subject.
+      Becomes emotional when pressed about her husband Thomas, who
+      disappeared six months ago. She knows more than she lets on but
+      is terrified of the truth.
+
+    knowledge:
+      public:
+        - "Runs the only inn in town"
+        - "Elias stayed here for a week before disappearing"
+        - "The town has been quiet lately, fewer visitors than usual"
+      hidden:
+        - "Her husband Thomas began hearing 'the whispers' before he vanished"
+        - "She found a strange symbol carved on Thomas's nightstand the morning he disappeared"
+        - "She's seen Father Morrison going to the church basement at night"
+        - "She knows the lighthouse is not truly abandoned"
+      secret:
+        - "Thomas left her a sealed envelope 'to be opened only if he doesn't come back.' She hasn't opened it yet."
+
+    trust_thresholds:
+      0: "Polite small talk only. Offers food and a room. Won't discuss anything personal."
+      30: "Mentions Elias stayed here. Says the town 'hasn't been the same lately.'"
+      50: "Admits Thomas disappeared. Tears up. Mentions he 'started acting strange' before he vanished."
+      70: "Reveals Thomas heard whispers from the sea. Shows you the carved symbol on his nightstand."
+      90: "Gives you Thomas's sealed envelope. Inside: a map showing a passage from the church to the caves."
+
+    dialogue_style: >
+      Speaks in warm, run-on sentences. Uses endearments like 'dear' and
+      'love.' When nervous, she busies herself with chores -- wiping the
+      counter, adjusting cups. When emotional, her sentences get shorter
+      and her accent thickens.
+
+  morrison:
+    name: "Father James Morrison"
+    role: "Parish Priest"
+    location: "church"
+    age: 67
+    appearance: "Tall and gaunt with deep-set eyes. His vestments are immaculate but his hands tremble slightly. A rosary is always in his left hand."
+
+    personality: >
+      Authoritative and measured. Speaks with the cadence of someone used
+      to delivering sermons. Deeply conflicted -- he genuinely believes
+      the sealing ritual is God's work, but the cost weighs on him. He
+      sees himself as a protector of the town and will resist anyone who
+      threatens the status quo.
+
+    knowledge:
+      public:
+        - "Has served this parish for 35 years"
+        - "The church holds weekly services and the annual Founders' Day ceremony"
+        - "Knew Elias -- 'a curious young man who asked too many questions'"
+      hidden:
+        - "The 'Founders' Day ceremony' is actually the sealing ritual, performed every 30 years"
+        - "The ritual requires a willing sacrifice -- someone who has 'heard the call'"
+        - "He performed the last ritual 30 years ago. The sacrifice was a fisherman named Arthur Crane."
+        - "The church basement contains the original ritual texts, brought by the town's founders"
+      secret:
+        - "Elias discovered the truth about the ritual and confronted Morrison. Morrison locked him in the lighthouse 'for his own safety.' He doesn't know Elias escaped to the caves."
+        - "Morrison believes Eleanor is the next intended sacrifice because she can 'hear it' -- but he's trying to find an alternative."
+
+    trust_thresholds:
+      0: "Formal greetings. Offers spiritual counsel. Deflects questions about town history."
+      30: "Acknowledges Elias visited the church. Warns you that 'some knowledge is best left undisturbed.'"
+      50: "Reveals the town has a 'sacred tradition' dating back to its founding. Speaks of duty and sacrifice in abstract terms."
+      70: "Explains the sealing ritual in veiled terms. Admits something is 'sealed beneath the bay.' Shows you the church basement."
+      90: "Full confession. Reveals everything about the ritual, Arthur Crane, and what he did to Elias. Asks for your help to find another way."
+
+    dialogue_style: >
+      Speaks in measured, formal sentences with biblical cadence. Uses
+      metaphors of light and darkness, shepherds and flock. When pressed,
+      his speech becomes clipped and defensive. When he finally opens up,
+      his voice drops to barely a whisper.
+
+  eleanor:
+    name: "Eleanor Marsh"
+    role: "Librarian"
+    location: "library"
+    age: 28
+    appearance: "Slender with dark hair pulled back. Wire-rimmed glasses. Ink-stained fingers. She moves quietly, as if trying not to disturb the books -- or something else."
+
+    personality: >
+      Intelligent and observant, with a dry wit that masks deep anxiety.
+      She's been researching her family history and has discovered things
+      that terrify her. She wants to break the cycle but doesn't know how.
+      She's wary of strangers but desperate for an ally.
+
+    knowledge:
+      public:
+        - "Manages the Ravenhollow library, including its restricted section"
+        - "Has a degree in library science from Miskatonic University"
+        - "Grew up in Ravenhollow, left for university, returned two years ago"
+      hidden:
+        - "Her grandmother was the 'keeper of knowledge' for the sealing ritual"
+        - "The restricted section contains books about the entity sealed beneath the bay"
+        - "She has been secretly translating the forbidden texts"
+        - "She can 'hear' something at night -- a low hum from the direction of the sea"
+      secret:
+        - "She has found an alternative to the human sacrifice: a ritual using the lighthouse lens to 'refract the seal' and make it permanent. But it requires someone who has 'seen the truth' -- meaning low sanity / deep knowledge."
+        - "She helped Elias access the restricted section. She feels responsible for what happened to him."
+
+    trust_thresholds:
+      0: "Professional and slightly cold. Helps you find general books. The restricted section is 'off limits.'"
+      30: "Warms up if you mention being a scholar. Mentions Elias 'used to study here.'"
+      50: "Admits she's been researching something 'personal.' Shares that her family has deep roots in the town. Lets you browse the edge of the restricted section."
+      70: "Reveals her grandmother's role. Shows you the forbidden tome. Gives you the lighthouse key."
+      90: "Shares her alternative ritual theory. Offers to help you at the caves. Reveals she can hear 'it.'"
+
+    dialogue_style: >
+      Precise and somewhat academic. Uses literary references. Her humor
+      is dark and self-deprecating. When sharing secrets, she speaks
+      rapidly as if afraid she'll lose her nerve. She fidgets with her
+      glasses when lying or withholding information.
+
+  silas:
+    name: "Old Silas"
+    role: "Retired Fisherman"
+    location: "docks"
+    age: 83
+    appearance: "A weathered husk of a man. Milky left eye. Gnarled fingers that never stop moving, always mending, always tying. His clothes smell of salt and something deeper -- kelp, and beneath that, something that has no name."
+
+    personality: >
+      Appears senile -- speaks in fragments, riddles, and sea metaphors.
+      But his mind is sharper than anyone realizes. He's the only living
+      person who has seen what lies beneath the bay. The experience broke
+      him, or perhaps it opened him. He tests people with his riddles; if
+      you prove worthy, he shares terrifying truths spoken plainly.
+
+    knowledge:
+      public:
+        - "Has lived in Ravenhollow his entire life"
+        - "Used to be the most successful fisherman in town"
+        - "Stopped fishing 30 years ago 'when the nets came up wrong'"
+      hidden:
+        - "He was on a boat during the last sealing ritual and saw the entity briefly"
+        - "He knows the tidal patterns that reveal the cave entrance"
+        - "He carved the warning signs on the docks that everyone thinks are decorations"
+      secret:
+        - "He knows the entity is not evil -- it is dreaming, and the ritual keeps forcing it back to sleep. If it wakes fully, it will simply leave. The real danger is the incomplete waking -- the ritual interrupted."
+        - "He has a piece of the original seal, taken from the caves 30 years ago"
+
+    trust_thresholds:
+      0: "Mumbles about the sea. Ignores you. 'The nets remember what we forget.'"
+      30: "Acknowledges you. Speaks in riddles about 'things below.' 'You hear it too, don't you? Everyone hears it. Most just call it the wind.'"
+      50: "Tells you about the night he saw 'it.' Speaks plainly for the first time. Marks the tide chart for the cave entrance."
+      70: "Gives you the seal fragment. Explains what the entity truly is. 'It's not a monster, boy. It's a dreamer. We're the ones in its dream.'"
+      90: "Agrees to guide you to the caves at low tide. His presence there has unique effects on the ending."
+
+    dialogue_style: >
+      At low trust: fragmented, poetic, riddling. "The deep don't whisper,
+      boy. Whispering's for them that's afraid. The deep SING." At high
+      trust: suddenly lucid and terrifyingly direct. The contrast should
+      be jarring. Always refers to the sea as a living thing.
+
+  elias:
+    name: "Dr. Elias Webb"
+    role: "Missing Scholar (not directly encountered)"
+    location: "none"
+    age: 34
+
+    personality: >
+      Brilliant, obsessive, reckless. His presence is felt through his
+      writings, which grow increasingly frantic and brilliant as his
+      research progressed.
+
+    artifacts:
+      elias_letter:
+        location: "starting_inventory"
+        content: >
+          My dear friend, if you're reading this then I've been right to
+          worry. Ravenhollow is not what it seems. The fishermen speak of
+          whispers from beneath the bay -- I thought it folklore, but I've
+          heard them now. There is a ritual, every 30 years. The priest
+          knows. The librarian's family knows. I believe I've found another
+          way, but they won't let me finish my work. If I don't contact you
+          by month's end, come find me. Look for my journal in the lighthouse.
+          Trust the girl at the library. Do NOT trust the priest -- he has
+          already chosen his path. And for God's sake, don't look into the
+          water at night.
+      elias_journal:
+        location: "lighthouse"
+        content: >
+          [A leather journal filled with increasingly erratic handwriting.
+          Contains detailed research on the entity, the ritual, and a
+          theory about the lighthouse lens. The final entries are almost
+          illegible, written in a mix of English and symbols that match
+          the cave carvings.]
+      elias_library_card:
+        location: "library"
+        content: >
+          [A library card with a list of books Elias checked out. Several
+          titles are from the restricted section, with Eleanor's initials
+          approving the access.]
