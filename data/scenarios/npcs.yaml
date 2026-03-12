@@ -1,10 +1,13 @@
 npcs:
   martha:
     name: "Martha Holloway"
+    name_zh: "玛莎·霍洛威"
     role: "Innkeeper"
+    role_zh: "旅馆老板娘"
     location: "inn"
     age: 52
     appearance: "A stout woman with kind eyes and calloused hands. Her apron is always slightly damp. She wears a locket she never opens."
+    appearance_zh: "一位身材敦实的女人，眼神和善，双手布满老茧。围裙上永远带着潮气。她戴着一枚从不打开的吊坠。"
 
     personality: >
       Warm and motherly on the surface, but guarded. Deflects personal
@@ -41,10 +44,13 @@ npcs:
 
   morrison:
     name: "Father James Morrison"
+    name_zh: "莫里森神父"
     role: "Parish Priest"
+    role_zh: "教区牧师"
     location: "church"
     age: 67
     appearance: "Tall and gaunt with deep-set eyes. His vestments are immaculate but his hands tremble slightly. A rosary is always in his left hand."
+    appearance_zh: "身材高瘦，眼窝深陷。法衣一尘不染，但双手微微颤抖。左手总是握着一串念珠。"
 
     personality: >
       Authoritative and measured. Speaks with the cadence of someone used
@@ -82,10 +88,13 @@ npcs:
 
   eleanor:
     name: "Eleanor Marsh"
+    name_zh: "埃莉诺·马什"
     role: "Librarian"
+    role_zh: "图书管理员"
     location: "library"
     age: 28
     appearance: "Slender with dark hair pulled back. Wire-rimmed glasses. Ink-stained fingers. She moves quietly, as if trying not to disturb the books -- or something else."
+    appearance_zh: "身形纤细，深色头发向后束起。金丝边眼镜。手指上沾着墨渍。她走路悄无声息，仿佛在努力不惊扰书籍——或者其他什么。"
 
     personality: >
       Intelligent and observant, with a dry wit that masks deep anxiety.
@@ -122,10 +131,13 @@ npcs:
 
   silas:
     name: "Old Silas"
+    name_zh: "老西拉斯"
     role: "Retired Fisherman"
+    role_zh: "退休渔夫"
     location: "docks"
     age: 83
     appearance: "A weathered husk of a man. Milky left eye. Gnarled fingers that never stop moving, always mending, always tying. His clothes smell of salt and something deeper -- kelp, and beneath that, something that has no name."
+    appearance_zh: "一个饱经风霜的干瘪老人。左眼浑浊。粗糙的手指永远不停，总在修补，总在打结。衣服上有盐的气味和更深层的东西——海带，再往下，某种无以名状之物。"
 
     personality: >
       Appears senile -- speaks in fragments, riddles, and sea metaphors.
@@ -162,7 +174,9 @@ npcs:
 
   elias:
     name: "Dr. Elias Webb"
+    name_zh: "伊莱亚斯·韦伯博士"
     role: "Missing Scholar (not directly encountered)"
+    role_zh: "失踪学者（不会直接出现）"
     location: "none"
     age: 34
 
@@ -185,6 +199,13 @@ npcs:
           Trust the girl at the library. Do NOT trust the priest -- he has
           already chosen his path. And for God's sake, don't look into the
           water at night.
+        content_zh: >
+          我亲爱的朋友，如果你在读这封信，那我的担忧就是对的。雷文霍洛不是
+          表面看到的那样。渔民们说起海湾之下的低语——我以为只是传说，但我现在
+          也听到了。有一个仪式，每三十年一次。牧师知道。图书管理员的家族知道。
+          我相信我找到了另一种方法，但他们不让我完成工作。如果月底前我没有联系你，
+          来找我。去灯塔找我的日记。信任图书馆的那个女孩。别信牧师——他已经
+          选好了他的路。还有，看在上帝的份上，晚上别往水里看。
       elias_journal:
         location: "lighthouse"
         content: >

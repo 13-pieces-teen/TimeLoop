@@ -1,5 +1,7 @@
 title: "The Unspeakable Midnight"
+title_zh: "不可名状的午夜"
 setting: "Ravenhollow, a remote coastal town in New England, 1927"
+setting_zh: "雷文霍洛，1927年，新英格兰偏远海滨小镇"
 
 backstory: >
   You are a folklore lecturer at Boston University. Three weeks ago, your
@@ -10,22 +12,35 @@ backstory: >
   everything resets. You find yourself standing at the inn's doorstep once
   more, clutching the same letter. Time is looping.
 
+backstory_zh: >
+  你是波士顿大学的民俗学讲师。三周前，你的挚友伊莱亚斯·韦伯博士前往
+  海滨小镇雷文霍洛，调查当地渔民所说的「海底低语」。此后杳无音讯。
+  带着他最后一封信，你在黄昏时分抵达小镇。午夜钟声敲响时，一切重置。
+  你发现自己又站在旅馆门口，手中握着同一封信。时间在循环。
+
 locations:
   inn:
     name: "The Sea Breeze Inn"
+    name_zh: "海风旅馆"
     description: "A weathered two-story building at the edge of town. The sign creaks in the salt wind. Inside, a fire crackles in the hearth and the smell of fish stew hangs in the air."
+    description_zh: "镇子边缘一栋饱经风霜的两层建筑。招牌在海风中吱嘎作响。屋内壁炉中火焰噼啪，空气中弥漫着鱼汤的气味。"
     connected_to: ["library", "church", "docks"]
     locked: false
     npcs_present: ["martha"]
     items_available: ["inn_guest_ledger"]
     sanity_notes:
       uneasy: "The fire casts long shadows that twist against the walls in ways that don't quite match the flames."
+      uneasy_zh: "火光投下长长的影子，在墙壁上扭曲的方式与火焰的跳动并不吻合。"
       distorted: "The stew smells wrong tonight -- like brine and something older. The shadows on the wall are moving even when the fire is still."
+      distorted_zh: "今晚的汤味道不对——像盐水和某种更古老的东西。墙上的影子在火焰静止时仍在移动。"
       madness: "This building breathes. You can feel it in the floorboards. Martha's smile has too many teeth, or perhaps you've simply never counted them before."
+      madness_zh: "这栋建筑在呼吸。你能从地板上感受到。玛莎的微笑牙齿太多了，又或者你从前只是没有数过。"
 
   library:
     name: "Ravenhollow Public Library"
+    name_zh: "雷文霍洛公共图书馆"
     description: "A small stone building crammed with dusty shelves. A section in the back is roped off -- 'Private Collection: Authorized Personnel Only.' Eleanor sits at the front desk, reading."
+    description_zh: "一座塞满积尘书架的小型石头建筑。后面一片区域被绳子围住——「私人藏书：仅限授权人员」。埃莉诺坐在前台，正在阅读。"
     connected_to: ["inn", "lighthouse"]
     locked: false
     npcs_present: ["eleanor"]
@@ -35,12 +50,17 @@ locations:
       - "Finding Elias's research notes (hidden in the private collection)"
     sanity_notes:
       uneasy: "Some of the book titles seem to shift when you're not looking directly at them."
+      uneasy_zh: "有些书名在你不直视的时候似乎在变化。"
       distorted: "The words on the pages you're reading are rearranging themselves. Or are they? You blink, and they're normal again. Were they always?"
+      distorted_zh: "你正在读的书页上，文字在自行重新排列。还是没有？你眨了眨眼，它们又恢复正常了。它们一直都是这样的吗？"
       madness: "The library extends infinitely in every direction. Shelves tower into darkness above. Eleanor hasn't blinked in eleven minutes. You know this because you've been counting."
+      madness_zh: "图书馆向每个方向无限延伸。书架高耸入上方的黑暗。埃莉诺已经十一分钟没有眨眼了。你知道这一点，因为你一直在数。"
 
   church:
     name: "St. Andrew's Church"
+    name_zh: "圣安德鲁教堂"
     description: "A stern granite church overlooking the harbor. Stained glass windows depict scenes that seem oddly maritime for a Christian church -- sea creatures intertwined with saints. Father Morrison tends the altar."
+    description_zh: "一座俯瞰港口的严肃花岗岩教堂。彩色玻璃窗描绘的场景对基督教堂来说过于海洋化——海洋生物与圣徒交织在一起。莫里森神父在照料祭坛。"
     connected_to: ["inn", "caves"]
     locked: false
     npcs_present: ["morrison"]
@@ -51,12 +71,17 @@ locations:
       - "Accessing the church basement (requires Morrison's trust >= 70)"
     sanity_notes:
       uneasy: "The figures in the stained glass seem to follow you with their eyes. The maritime creatures look less like decorations and more like portraits."
+      uneasy_zh: "彩色玻璃中的人物似乎用目光跟随着你。那些海洋生物看起来不像是装饰，更像是肖像。"
       distorted: "The saints in the glass are drowning. Their mouths are open. You can almost hear them. Morrison's prayers sound like they're in a language older than Latin."
+      distorted_zh: "玻璃中的圣徒在溺水。他们的嘴张开着。你几乎能听到他们的声音。莫里森的祈祷听起来像是某种比拉丁语更古老的语言。"
       madness: "The church is underwater. It has always been underwater. The stained glass is a window to the outside, and outside is the sea, and in the sea something vast is watching you pray."
+      madness_zh: "教堂在水下。它一直都在水下。彩色玻璃是通往外面的窗户，而外面就是大海，大海里有什么庞大的东西在看着你祈祷。"
 
   docks:
     name: "Ravenhollow Docks"
+    name_zh: "雷文霍洛码头"
     description: "Weathered wooden piers stretching into dark water. A few fishing boats rock gently. The air is thick with salt and the smell of seaweed. Old Silas sits on an overturned crate, mending a net that looks like it hasn't caught fish in years."
+    description_zh: "饱经风霜的木栈桥伸入幽暗的水面。几艘渔船轻轻摇晃。空气中弥漫着浓重的盐味和海藻气息。老西拉斯坐在一只翻转的板条箱上，修补着一张看起来多年没捕到过鱼的渔网。"
     connected_to: ["inn", "caves"]
     locked: false
     npcs_present: ["silas"]
@@ -67,12 +92,17 @@ locations:
       - "Following Silas to his 'special spot' at low tide"
     sanity_notes:
       uneasy: "The water is darker than it should be at this hour. Something large moves beneath the surface -- probably just a fish."
+      uneasy_zh: "这个时间的水色比应有的更暗。水面下有什么大东西在移动——大概只是一条鱼。"
       distorted: "The boats are whispering to each other. The nets Silas mends form patterns -- symbols? -- that you almost recognize. The water at the pier's edge is warm."
+      distorted_zh: "船只在彼此低语。西拉斯修补的渔网形成了某种图案——符号？——你几乎能认出来。栈桥边的水是温热的。"
       madness: "The sea knows your name. It has always known your name. Silas is not mending a net; he is weaving a prayer. The things beneath the water are rising because you are here. You have always been here."
+      madness_zh: "大海知道你的名字。它一直都知道你的名字。西拉斯不是在修补渔网；他在编织一段祈祷。水面之下的东西正在升起，因为你在这里。你一直都在这里。"
 
   lighthouse:
     name: "The Abandoned Lighthouse"
+    name_zh: "废弃灯塔"
     description: "A crumbling stone tower on the cliff north of town. Officially closed for years, but the door shows signs of recent entry. Elias's handwriting is scratched into the doorframe: 'THE LIGHT REVEALS.'"
+    description_zh: "镇子北面悬崖上一座破败的石头塔楼。官方关闭多年，但门上有近期进入的痕迹。门框上刻着伊莱亚斯的笔迹：「光揭示一切。」"
     connected_to: ["library"]
     locked: true
     unlock_condition: "Possess 'lighthouse_key' from Eleanor OR discovered_fact 'elias_lighthouse_clue'"
@@ -84,12 +114,17 @@ locations:
       - "Finding the passage to the caves from above"
     sanity_notes:
       uneasy: "The lighthouse beam, though broken, seems to cast light in directions that don't follow geometry."
+      uneasy_zh: "灯塔的光束虽然已经损坏，却似乎向不符合几何学的方向投射着光。"
       distorted: "Elias's notes are written in his handwriting but the language keeps shifting. Some pages are wet with seawater despite being on the top floor. The star chart shows constellations that shouldn't exist."
+      distorted_zh: "伊莱亚斯的笔记是他的笔迹，但语言不断变化。尽管在顶层，有些页面被海水浸湿。星图显示着不应该存在的星座。"
       madness: "You climb the lighthouse but it has no top. Or perhaps it has always been the bottom. Elias's journal is writing itself. The lens shows you not the sea but what lives beneath it, and it is looking back through the lens at you."
+      madness_zh: "你攀登灯塔，但它没有顶端。又或者这里一直就是底部。伊莱亚斯的日记在自己书写。透镜向你展示的不是大海，而是大海之下活着的东西，而它正透过透镜回望着你。"
 
   caves:
     name: "The Tidal Caves"
+    name_zh: "潮汐洞穴"
     description: "A network of sea caves accessible only at low tide from the docks, or through a hidden passage from the church basement. The walls are covered in carvings that predate any known civilization."
+    description_zh: "一片只有退潮时才能从码头进入的海洋洞穴网络，或者通过教堂地下室的暗道。墙壁上覆盖着早于任何已知文明的雕刻。"
     connected_to: ["church", "docks"]
     locked: true
     unlock_condition: "discovered_fact 'caves_entrance_known' AND (possess 'ritual_candle' OR possess 'lighthouse_lens')"
@@ -101,10 +136,15 @@ locations:
       - "Performing / disrupting the ritual"
     sanity_notes:
       uneasy: "The carvings seem to move in the torchlight. The tide pools reflect a sky that has too many stars."
+      uneasy_zh: "雕刻在火光中似乎在移动。潮汐池倒映着一片星星过多的天空。"
       distorted: "The walls are breathing. The carvings are a story about you. You can read them now because you have always been able to. The water in the caves is rising even though the tide charts say it shouldn't be."
+      distorted_zh: "墙壁在呼吸。雕刻是一个关于你的故事。你现在能读懂它们，因为你一直都能。洞穴中的水位在上升，尽管潮汐表显示不应该如此。"
       madness: "You are inside something alive. The caves are not caves. They are the throat of the world. The carvings are not carvings; they are scars. It is waking up. It has always been waking up. You are the last bell before midnight."
+      madness_zh: "你在某个活物的体内。洞穴不是洞穴。它们是世界的咽喉。雕刻不是雕刻；它们是伤疤。它正在醒来。它一直在醒来。你是午夜前的最后一声钟。"
 
 starting_inventory:
   - id: "elias_letter"
     name: "Elias's Last Letter"
+    name_zh: "伊莱亚斯的最后一封信"
     description: "A hastily written letter from your friend. It mentions 'the whispers,' 'a ritual every 30 years,' and 'they won't let me leave.' The handwriting deteriorates toward the end."
+    description_zh: "来自你朋友的一封匆忙写就的信。信中提到了「低语」、「每三十年一次的仪式」和「他们不让我离开」。笔迹到末尾逐渐潦草。"

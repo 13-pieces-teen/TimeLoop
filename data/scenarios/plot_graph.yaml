@@ -45,7 +45,7 @@ endings:
       all_of:
         - "flag eleanor_ritual_known == true"
         - "possess lighthouse_lens"
-        - "discovered_fact elias_alternative_method"
+        - "discovered_fact elias_found_alternative_method"
         - "location == caves"
         - "sanity <= 40"
     narration: >

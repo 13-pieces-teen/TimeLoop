@@ -21,10 +21,36 @@ class Event:
     title_zh: str
     trigger: dict[str, Any]
     narration: str
+    narration_zh: str
     effects: list[dict[str, Any]] = field(default_factory=list)
     choices: list[dict[str, Any]] = field(default_factory=list)
     dialogue: dict[str, str] | None = None
     sanity_impact: int = 0
+
+    def get_narration(self, lang: str = "en") -> str:
+        return self.narration_zh if lang == "zh" else self.narration
+
+    def get_title(self, lang: str = "en") -> str:
+        return self.title_zh if lang == "zh" else self.title
+
+    def get_dialogue(self, lang: str = "en") -> dict[str, str] | None:
+        if not self.dialogue:
+            return None
+        if lang == "zh":
+            return {
+                "speaker": self.dialogue.get("speaker_zh", self.dialogue.get("speaker", "")),
+                "text": self.dialogue.get("text_zh", self.dialogue.get("text", "")),
+            }
+        return {"speaker": self.dialogue.get("speaker", ""), "text": self.dialogue.get("text", "")}
+
+    def get_choices(self, lang: str = "en") -> list[dict[str, Any]]:
+        result = []
+        for c in self.choices:
+            entry = dict(c)
+            if lang == "zh" and "text_zh" in c:
+                entry["text"] = c["text_zh"]
+            result.append(entry)
+        return result
 
 
 @dataclass
@@ -49,6 +75,7 @@ class EventSystem:
                 title_zh=e.get("title_zh", e.get("title", e["id"])),
                 trigger=e.get("trigger", {}),
                 narration=e.get("narration", "").strip(),
+                narration_zh=e.get("narration_zh", e.get("narration", "")).strip(),
                 effects=e.get("effects", []),
                 choices=e.get("choices", []),
                 dialogue=e.get("dialogue"),
@@ -157,6 +184,74 @@ class EventSystem:
             return False
         return True
 
+    def get_narrative_hints(self, game_state: GameState, loop_memory: LoopMemory, lang: str = "en") -> str:
+        """Generate hints for the LLM about what the player should consider doing next."""
+        hints = []
+        for event in self.events:
+            if event.id in self.fired_events or event.act == 0:
+                continue
+            trigger = event.trigger
+
+            missing = []
+            if "location" in trigger and game_state.location != trigger["location"]:
+                loc = trigger["location"]
+                missing.append(f"go to {loc}" if lang == "en" else f"前往{loc}")
+            if "flag" in trigger and not game_state.flags.get(trigger["flag"], False):
+                continue
+            if "not_flag" in trigger and game_state.flags.get(trigger["not_flag"], False):
+                continue
+            if "fact_required" in trigger and trigger["fact_required"] not in game_state.discovered_facts:
+                continue
+
+            if "npc_trust" in trigger:
+                trust_ok = True
+                for npc_id, min_trust in trigger["npc_trust"].items():
+                    npc = game_state.characters.get(npc_id)
+                    if npc and npc.trust < min_trust:
+                        gap = min_trust - npc.trust
+                        if gap <= 20:
+                            name = npc.name
+                            missing.append(
+                                f"build more trust with {name}"
+                                if lang == "en"
+                                else f"与{name}建立更多信任"
+                            )
+                        else:
+                            trust_ok = False
+                    elif not npc:
+                        trust_ok = False
+                if not trust_ok:
+                    continue
+
+            if not missing:
+                title = event.get_title(lang)
+                if "any_input_keyword" in trigger:
+                    if lang == "zh":
+                        hints.append(f"- 提示：可以探索与「{title}」相关的话题")
+                    else:
+                        hints.append(f"- Hint: explore topics related to \"{title}\"")
+                else:
+                    if lang == "zh":
+                        hints.append(f"- 重要事件「{title}」即将触发")
+                    else:
+                        hints.append(f"- An important event \"{title}\" is close to triggering")
+            elif len(missing) <= 2:
+                title = event.get_title(lang)
+                advice = "; ".join(missing)
+                if lang == "zh":
+                    hints.append(f"- 若想推进「{title}」，可以考虑{advice}")
+                else:
+                    hints.append(f"- To advance \"{title}\", consider: {advice}")
+
+            if len(hints) >= 3:
+                break
+
+        if not hints:
+            return ""
+        header = "--- 叙事引导提示（自然融入叙述，不要直接告诉玩家）---" if lang == "zh" else \
+            "--- NARRATIVE GUIDANCE (weave naturally into narration, do NOT tell the player directly) ---"
+        return header + "\n" + "\n".join(hints)
+
     def format_timeline(self, game_state: GameState) -> str:
         """Format the timeline as plain text fallback."""
         timeline = self.get_timeline(game_state)
@@ -170,7 +265,7 @@ class EventSystem:
             lines.append(f"{icon} {item['title_zh']}")
         return "\n".join(lines)
 
-    def format_timeline_html(self, game_state: GameState) -> str:
+    def format_timeline_html(self, game_state: GameState, lang: str = "en") -> str:
         """Render the timeline as a horizontal flow with fog-of-war."""
         timeline = self.get_timeline(game_state)
         ACT_ROMAN = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V"}
@@ -212,6 +307,8 @@ class EventSystem:
 
             for i, ev in enumerate(events):
                 status = ev["status"]
+                main_title = ev["title_zh"] if lang == "zh" else ev["title"]
+                sub_title = ev["title"] if lang == "zh" else ev["title_zh"]
 
                 if is_future:
                     html.append(
@@ -231,8 +328,8 @@ class EventSystem:
                         f'stroke="#0b0e17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
                         f'</svg></div>'
                         f'<div class="tl-card tl-card-done">'
-                        f'<div class="tl-title">{ev["title_zh"]}</div>'
-                        f'<div class="tl-sub">{ev["title"]}</div>'
+                        f'<div class="tl-title">{main_title}</div>'
+                        f'<div class="tl-sub">{sub_title}</div>'
                         f'</div></div>'
                     )
                 elif status == "available":
@@ -240,8 +337,8 @@ class EventSystem:
                         f'<div class="tl-node">'
                         f'<div class="tl-dot tl-dot-active"></div>'
                         f'<div class="tl-card tl-card-active">'
-                        f'<div class="tl-title">{ev["title_zh"]}</div>'
-                        f'<div class="tl-sub">{ev["title"]}</div>'
+                        f'<div class="tl-title">{main_title}</div>'
+                        f'<div class="tl-sub">{sub_title}</div>'
                         f'</div></div>'
                     )
                 else:
@@ -249,8 +346,8 @@ class EventSystem:
                         f'<div class="tl-node">'
                         f'<div class="tl-dot tl-dot-pending"></div>'
                         f'<div class="tl-card tl-card-pending">'
-                        f'<div class="tl-title">{ev["title_zh"]}</div>'
-                        f'<div class="tl-sub">{ev["title"]}</div>'
+                        f'<div class="tl-title">{main_title}</div>'
+                        f'<div class="tl-sub">{sub_title}</div>'
                         f'</div></div>'
                     )
 
