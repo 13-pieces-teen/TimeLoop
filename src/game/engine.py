@@ -454,3 +454,8 @@ class GameEngine:
         if not self.event_system or not self.game_state:
             return ""
         return self.event_system.format_timeline(self.game_state)
+
+    def get_event_timeline_html(self) -> str:
+        if not self.event_system or not self.game_state:
+            return ""
+        return self.event_system.format_timeline_html(self.game_state)
