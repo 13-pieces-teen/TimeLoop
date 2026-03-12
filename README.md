@@ -1,3 +1,14 @@
+---
+title: "TimeLoop: The Unspeakable Midnight"
+emoji: 🕰️
+colorFrom: indigo
+colorTo: gray
+sdk: gradio
+sdk_version: "6.9.0"
+app_file: main.py
+pinned: false
+---
+
 # TimeLoop: The Unspeakable Midnight
 
 A Lovecraftian time-loop interactive text adventure powered by LLM, built for COMP5423 Natural Language Processing.

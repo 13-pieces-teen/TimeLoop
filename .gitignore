@@ -19,3 +19,8 @@ logs/
 
 # 本地数据（若需版本控制可移除 data/）
 # data/
+
+# 部署产物
+*.pyc
+dist/
+build/
