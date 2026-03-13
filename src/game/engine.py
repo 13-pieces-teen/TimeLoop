@@ -18,8 +18,35 @@ from src.state.loop_memory import LoopMemory
 
 logger = logging.getLogger(__name__)
 
-AUTO_TRUST_PER_INTERACTION = 10
+AUTO_TRUST_PER_INTERACTION = 5
 TIME_PER_TURN = 20
+
+FACT_TRUST_MAP: dict[str, dict[str, int]] = {
+    "martha": {
+        "elias_stayed_at_inn": 5,
+        "thomas_holloway_heard_whispers": 10,
+        "thomas_holloway_missing_six_months": 5,
+        "multiple_people_have_disappeared": 5,
+    },
+    "morrison": {
+        "ritual_happens_every_30_years": 15,
+        "elias_found_alternative_method": 10,
+        "morrison_performed_last_ritual": 10,
+        "ritual_requires_sacrifice": 5,
+    },
+    "eleanor": {
+        "elias_stayed_at_inn": 5,
+        "morrison_locked_elias_in_lighthouse": 10,
+        "eleanor_helped_elias": 5,
+        "elias_discovered_lens_ritual": 10,
+    },
+    "silas": {
+        "entity_sleeps_beneath_bay": 10,
+        "thomas_holloway_heard_whispers": 5,
+        "entity_is_dreaming_not_evil": 10,
+        "silas_witnessed_the_entity": 5,
+    },
+}
 
 
 @dataclass
@@ -33,6 +60,7 @@ class TurnResult:
     state_logs: list[str] = field(default_factory=list)
     consistency_log: str = ""
     event_triggered: str = ""
+    event_image: str | None = None
     is_ending: bool = False
     ending_id: str = ""
     ending_text: str = ""
@@ -141,7 +169,7 @@ class GameEngine:
         for npc_id, npc in self.game_state.characters.items():
             prev_max = self.loop_memory.npc_max_trust.get(npc_id, 0)
             if prev_max > 0:
-                npc.trust = int(prev_max * 0.3)
+                npc.trust = int(prev_max * 0.5)
 
         if self.event_system:
             self.event_system.reset_for_new_loop(self.loop_memory)
@@ -158,7 +186,7 @@ class GameEngine:
     # Event system
     # ------------------------------------------------------------------
 
-    def _apply_event(self, event: Event) -> TurnResult:
+    def _apply_event(self, event: Event, advance_time: bool = True) -> TurnResult:
         """Apply a scripted event directly -- no LLM call needed."""
         if not self.game_state:
             return TurnResult(error="No active game.")
@@ -167,7 +195,9 @@ class GameEngine:
         state_logs = self.game_state.apply_state_updates(event.effects)
         sanity_delta = event.sanity_impact
         self.game_state.modify_sanity(sanity_delta)
-        self.game_state.advance_time(self.cfg_time_per_turn)
+        if advance_time:
+            cost = event.time_cost if event.time_cost is not None else self.cfg_time_per_turn
+            self.game_state.advance_time(cost)
 
         narration = event.get_narration(lang)
         dialogue = event.get_dialogue(lang)
@@ -191,6 +221,7 @@ class GameEngine:
             sanity_delta=sanity_delta,
             state_logs=state_logs,
             event_triggered=event.get_title(lang),
+            event_image=event.image,
         )
 
         ending = self._check_endings()
@@ -206,12 +237,21 @@ class GameEngine:
     # Turn processing
     # ------------------------------------------------------------------
 
-    def process_turn(self, player_input: str, choice_sanity_cost: int = 0, choice_id: str = "") -> TurnResult:
+    def process_turn(
+        self,
+        player_input: str,
+        choice_sanity_cost: int = 0,
+        choice_id: str = "",
+        trust_bonus: dict[str, int] | None = None,
+    ) -> TurnResult:
         if not self.game_state:
             return TurnResult(error="No active game. Call new_game() first.")
 
         if choice_sanity_cost:
             self.game_state.modify_sanity(choice_sanity_cost)
+
+        if trust_bonus:
+            self._apply_trust_bonus(trust_bonus)
 
         if self.event_system and choice_id:
             self.event_system.last_choice_id = choice_id
@@ -319,7 +359,7 @@ class GameEngine:
                 self.game_state, self.loop_memory, combined_input
             )
             if late_event:
-                event_result = self._apply_event(late_event)
+                event_result = self._apply_event(late_event, advance_time=False)
                 event_result.consistency_log = "\n".join(consistency_log_parts)
                 return event_result
 
@@ -384,6 +424,15 @@ class GameEngine:
                 return True
         return False
 
+    def _apply_trust_bonus(self, trust_bonus: dict[str, int]) -> None:
+        """Apply choice-driven trust bonuses from the last selected option."""
+        if not self.game_state or not trust_bonus:
+            return
+        for npc_id, delta in trust_bonus.items():
+            if npc_id in self.game_state.characters:
+                self.game_state.update_trust(npc_id, delta)
+                logger.info("trust_bonus: %s +%d", npc_id, delta)
+
     def _auto_trust_gain(self, player_input: str) -> None:
         """Every interaction at an NPC's location grants a small trust boost."""
         if not self.game_state:
@@ -391,12 +440,33 @@ class GameEngine:
         for npc_id, npc in self.game_state.characters.items():
             if npc.location == self.game_state.location and npc.alive:
                 self.game_state.update_trust(npc_id, AUTO_TRUST_PER_INTERACTION)
+        self._apply_fact_trust_bonus()
+
+    def _apply_fact_trust_bonus(self) -> None:
+        """Grant one-time trust when the player carries relevant facts to an NPC."""
+        if not self.game_state:
+            return
+        player_facts = set(self.game_state.discovered_facts)
+        for npc_id, npc in self.game_state.characters.items():
+            if npc.location != self.game_state.location or not npc.alive:
+                continue
+            fact_map = FACT_TRUST_MAP.get(npc_id, {})
+            for fact_id, bonus in fact_map.items():
+                if fact_id not in player_facts:
+                    continue
+                flag_key = f"_fact_trust_{npc_id}_{fact_id}"
+                if self.game_state.flags.get(flag_key):
+                    continue
+                self.game_state.set_flag(flag_key, True)
+                self.game_state.update_trust(npc_id, bonus)
+                logger.info("fact_trust_bonus: %s +%d (fact=%s)", npc_id, bonus, fact_id)
 
     def _apply_parsed_output(self, parsed: ParsedOutput) -> None:
         if not self.game_state:
             return
         self.game_state.modify_sanity(parsed.sanity_impact)
-        self.game_state.advance_time(parsed.time_advance)
+        capped_time = min(parsed.time_advance, self.cfg_time_per_turn)
+        self.game_state.advance_time(capped_time)
         self.game_state.apply_state_updates(parsed.state_updates)
 
         self.game_state.add_turn_to_history({

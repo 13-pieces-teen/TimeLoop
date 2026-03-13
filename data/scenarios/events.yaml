@@ -2,6 +2,7 @@ events:
   # ===== ACT 1: ARRIVAL (Turn 1-3) =====
   - id: "arrival"
     act: 1
+    image: "arrival.png"
     title: "Arrival at Ravenhollow"
     title_zh: "抵达雷文霍洛"
     trigger:
@@ -39,6 +40,7 @@ events:
 
   - id: "martha_intro"
     act: 1
+    image: "martha_intro.png"
     title: "Meeting Martha"
     title_zh: "与玛莎初见"
     trigger:
@@ -73,10 +75,12 @@ events:
         text: "I'm looking for my friend, Dr. Elias Webb"
         text_zh: "我在找我的朋友，伊莱亚斯·韦伯博士"
         sanity_cost: 0
+        trust_bonus: {martha: 15}
       - id: "ask_about_town"
         text: "Tell me about the town"
         text_zh: "和我说说这个镇子吧"
         sanity_cost: 0
+        trust_bonus: {martha: 5}
       - id: "just_room"
         text: "Just a room for the night, please"
         text_zh: "只需要一间过夜的房间"
@@ -84,6 +88,7 @@ events:
 
   - id: "mention_elias_to_martha"
     act: 1
+    image: "martha_intro.png"
     title: "Martha Recognizes Elias's Name"
     title_zh: "玛莎认出了伊莱亚斯的名字"
     trigger:
@@ -120,10 +125,12 @@ events:
         text: "She seems afraid. Press her gently for more details."
         text_zh: "她似乎在害怕。温和地追问更多细节。"
         sanity_cost: 0
+        trust_bonus: {martha: 10}
       - id: "ask_directions"
         text: "Where did he spend his time? Who did he talk to?"
         text_zh: "他都去了哪些地方？和谁交谈过？"
         sanity_cost: 0
+        trust_bonus: {martha: 5}
       - id: "explore_town"
         text: "Thank her and head out to investigate the town"
         text_zh: "感谢她，出门调查小镇"
@@ -132,6 +139,7 @@ events:
   # ===== ACT 2: INVESTIGATION (Turn 3-6) =====
   - id: "visit_library"
     act: 2
+    image: "visit_library.png"
     title: "The Restricted Section"
     title_zh: "禁区书架"
     trigger:
@@ -169,17 +177,21 @@ events:
         text: "Ask if she knew Dr. Elias Webb"
         text_zh: "问她是否认识伊莱亚斯·韦伯博士"
         sanity_cost: 0
+        trust_bonus: {eleanor: 10}
       - id: "ask_restricted"
         text: "Ask about the restricted section"
         text_zh: "询问禁区书架的事"
         sanity_cost: 0
+        trust_bonus: {eleanor: 5}
       - id: "browse_history"
         text: "Browse the local history section"
         text_zh: "浏览地方志区域"
         sanity_cost: 0
+        trust_bonus: {eleanor: 5}
 
   - id: "visit_church"
     act: 2
+    image: "visit_church.png"
     title: "The Stained Glass Saints"
     title_zh: "彩窗中的圣徒"
     trigger:
@@ -217,17 +229,21 @@ events:
         text: "Ask about the unusual stained glass windows"
         text_zh: "询问那些不寻常的彩色玻璃窗"
         sanity_cost: 0
+        trust_bonus: {morrison: 10}
       - id: "ask_morrison_elias"
         text: "Ask if he knew Dr. Elias Webb"
         text_zh: "问他是否认识伊莱亚斯·韦伯博士"
         sanity_cost: 0
+        trust_bonus: {morrison: 10}
       - id: "ask_town_history"
         text: "Ask about the town's founding history"
         text_zh: "询问小镇的建镇历史"
         sanity_cost: 0
+        trust_bonus: {morrison: 5}
 
   - id: "silas_deja_vu"
     act: 2
+    image: "visit_docks.png"
     title: "The Sea Remembers"
     title_zh: "大海记得"
     trigger:
@@ -263,17 +279,21 @@ events:
         text: "What do you remember, old man?"
         text_zh: "你记得什么，老人家？"
         sanity_cost: 0
+        trust_bonus: {silas: 10}
       - id: "ask_silas_entity"
         text: "Tell me about the thing beneath the water"
         text_zh: "告诉我水下的那个东西"
         sanity_cost: -5
+        trust_bonus: {silas: 15}
       - id: "ask_silas_elias"
         text: "Did you know a man named Elias Webb?"
         text_zh: "你认识一个叫伊莱亚斯·韦伯的人吗？"
         sanity_cost: 0
+        trust_bonus: {silas: 5}
 
   - id: "visit_docks"
     act: 2
+    image: "visit_docks.png"
     title: "The Old Fisherman"
     title_zh: "码头上的老渔夫"
     trigger:
@@ -310,18 +330,22 @@ events:
         text: "Ask about the 'whispers from the sea'"
         text_zh: "问他关于「海中低语」的事"
         sanity_cost: -5
+        trust_bonus: {silas: 10}
       - id: "ask_silas_boats"
         text: "Ask why no one seems to be fishing"
         text_zh: "问他为什么没人出海捕鱼"
         sanity_cost: 0
+        trust_bonus: {silas: 5}
       - id: "observe_water"
         text: "Walk to the edge of the pier and look down"
         text_zh: "走到栈桥边缘，向下看"
         sanity_cost: -5
+        trust_bonus: {silas: 5}
 
   # ===== ACT 3: REVELATIONS (Trust-gated) =====
   - id: "martha_husband"
     act: 3
+    image: "martha_husband.png"
     title: "Martha's Secret"
     title_zh: "玛莎的秘密"
     trigger:
@@ -361,17 +385,21 @@ events:
         text: "Ask about the locket she keeps touching"
         text_zh: "问她一直在摸的那个吊坠"
         sanity_cost: 0
+        trust_bonus: {martha: 5}
       - id: "ask_others"
         text: "What 'others'? How many people have disappeared?"
         text_zh: "什么「那些人」？有多少人失踪了？"
         sanity_cost: 0
+        trust_bonus: {martha: 5}
       - id: "comfort_martha"
         text: "Reach across the table and take her hand"
         text_zh: "伸手过桌握住她的手"
         sanity_cost: 0
+        trust_bonus: {martha: 15}
 
   - id: "martha_letter"
     act: 3
+    image: "martha_husband.png"
     title: "Thomas's Envelope"
     title_zh: "托马斯的密封信"
     trigger:
@@ -406,10 +434,12 @@ events:
         text: "Open the envelope and study the map inside"
         text_zh: "打开信封，研究里面的地图"
         sanity_cost: -5
+        trust_bonus: {martha: 5}
       - id: "comfort_martha_again"
         text: "Thank Martha and promise to bring answers"
         text_zh: "感谢玛莎，承诺会带回答案"
         sanity_cost: 0
+        trust_bonus: {martha: 15}
       - id: "go_church_passage"
         text: "The map shows a passage from the church -- head there now"
         text_zh: "地图标出了教堂的通道——立刻前往"
@@ -417,6 +447,7 @@ events:
 
   - id: "eleanor_confession"
     act: 3
+    image: "eleanor_confession.png"
     title: "Eleanor's Guilt"
     title_zh: "埃莉诺的愧疚"
     trigger:
@@ -458,17 +489,21 @@ events:
         text: "Read the forbidden books Elias was studying"
         text_zh: "阅读伊莱亚斯研究的禁书"
         sanity_cost: -20
+        trust_bonus: {eleanor: 10}
       - id: "ask_grandmother"
         text: "Tell me about your grandmother"
         text_zh: "告诉我关于你祖母的事"
         sanity_cost: 0
+        trust_bonus: {eleanor: 15}
       - id: "go_lighthouse"
         text: "Take the key and head to the lighthouse immediately"
         text_zh: "拿起钥匙，立刻前往灯塔"
         sanity_cost: 0
+        trust_bonus: {eleanor: 5}
 
   - id: "forbidden_tome"
     act: 3
+    image: "forbidden_tome.png"
     title: "The Forbidden Tome"
     title_zh: "禁忌之书"
     trigger:
@@ -502,17 +537,21 @@ events:
         text: "Keep reading -- there must be an alternative"
         text_zh: "继续读——一定有别的办法"
         sanity_cost: -10
+        trust_bonus: {eleanor: 5}
       - id: "confront_morrison"
         text: "Take this to Father Morrison and demand answers"
         text_zh: "拿着这个去找莫里森神父要个说法"
         sanity_cost: 0
+        trust_bonus: {morrison: 10}
       - id: "tell_eleanor"
         text: "Show Eleanor what you've found"
         text_zh: "把发现的东西给埃莉诺看"
         sanity_cost: 0
+        trust_bonus: {eleanor: 10}
 
   - id: "morrison_truth"
     act: 3
+    image: "morrison_truth.png"
     title: "Morrison's Confession"
     title_zh: "莫里森的告白"
     trigger:
@@ -554,6 +593,7 @@ events:
         text: "Tell him you understand -- ask him to help make it right"
         text_zh: "告诉他你理解——请求他帮忙弥补一切"
         sanity_cost: 0
+        trust_bonus: {morrison: 20}
       - id: "condemn"
         text: "How could you? Take me to the lighthouse. Now."
         text_zh: "你怎么能这样？带我去灯塔。现在。"
@@ -562,9 +602,11 @@ events:
         text: "The ritual is coming again. When?"
         text_zh: "仪式又要来了。什么时候？"
         sanity_cost: 0
+        trust_bonus: {morrison: 10}
 
   - id: "silas_truth"
     act: 3
+    image: "silas_truth.png"
     title: "What Silas Saw"
     title_zh: "西拉斯目睹的真相"
     trigger:
@@ -608,18 +650,22 @@ events:
         text: "What's the other way?"
         text_zh: "另一种方法是什么？"
         sanity_cost: 0
+        trust_bonus: {silas: 10}
       - id: "look_at_water"
         text: "Show me. Take me to see it."
         text_zh: "带我去看。让我亲眼看看。"
         sanity_cost: -15
+        trust_bonus: {silas: 15}
       - id: "ask_seal"
         text: "Do you still have a piece of the original seal?"
         text_zh: "你还保留着原始封印的碎片吗？"
         sanity_cost: 0
+        trust_bonus: {silas: 10}
 
   # ===== ACT 4: LIGHTHOUSE =====
   - id: "lighthouse_discovery"
     act: 4
+    image: "lighthouse_discovery.png"
     title: "Elias's Journal"
     title_zh: "伊莱亚斯的日记"
     trigger:
@@ -662,6 +708,7 @@ events:
   # ===== ACT 4.5: THE DIVIDE (Faction Choice) =====
   - id: "the_divide"
     act: 4
+    image: "the_divide.png"
     title: "The Divide"
     title_zh: "分歧"
     trigger:
@@ -687,10 +734,12 @@ events:
         text: "Stand with Morrison. The ritual has worked for centuries."
         text_zh: "站在莫里森一边。仪式已经延续了几个世纪。"
         sanity_cost: 0
+        trust_bonus: {morrison: 15}
       - id: "ally_eleanor"
         text: "Trust Eleanor's research. Break the cycle for good."
         text_zh: "相信埃莉诺的研究。彻底打破循环。"
         sanity_cost: 0
+        trust_bonus: {eleanor: 15}
       - id: "go_alone"
         text: "Trust neither. Find your own way in the caves."
         text_zh: "谁也不信。在洞穴中走自己的路。"
@@ -698,6 +747,7 @@ events:
 
   - id: "ally_morrison_outcome"
     act: 4
+    image: "morrison_truth.png"
     title: "Morrison's Resolve"
     title_zh: "莫里森的决心"
     trigger:
@@ -723,13 +773,16 @@ events:
         text: "Head to the caves immediately"
         text_zh: "立刻前往洞穴"
         sanity_cost: 0
+        trust_bonus: {morrison: 5}
       - id: "prepare_more"
         text: "Take time to prepare — visit others first"
         text_zh: "多做些准备——先去见其他人"
         sanity_cost: 0
+        trust_bonus: {morrison: 10}
 
   - id: "ally_eleanor_outcome"
     act: 4
+    image: "eleanor_confession.png"
     title: "Eleanor's Gambit"
     title_zh: "埃莉诺的赌注"
     trigger:
@@ -756,14 +809,17 @@ events:
         text: "Head to the caves with the lighthouse lens"
         text_zh: "带着灯塔透镜前往洞穴"
         sanity_cost: 0
+        trust_bonus: {eleanor: 5}
       - id: "lower_sanity"
         text: "Stare into the lens first — embrace the truth"
         text_zh: "先凝视透镜——拥抱真相"
         sanity_cost: -20
+        trust_bonus: {eleanor: 10}
 
   # ===== ACT 5: ENDGAME =====
   - id: "caves_entrance"
     act: 5
+    image: "caves_entrance.png"
     title: "Into the Deep"
     title_zh: "深入深渊"
     trigger:
@@ -804,6 +860,8 @@ events:
   # ===== MIDNIGHT =====
   - id: "midnight_approaches"
     act: 0
+    time_cost: 0
+    image: "midnight_approaches.png"
     title: "The Bells Begin"
     title_zh: "钟声将至"
     trigger:

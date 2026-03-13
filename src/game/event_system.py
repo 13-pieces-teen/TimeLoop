@@ -26,6 +26,8 @@ class Event:
     choices: list[dict[str, Any]] = field(default_factory=list)
     dialogue: dict[str, str] | None = None
     sanity_impact: int = 0
+    time_cost: int | None = None
+    image: str | None = None
 
     def get_narration(self, lang: str = "en") -> str:
         return self.narration_zh if lang == "zh" else self.narration
@@ -80,6 +82,8 @@ class EventSystem:
                 choices=e.get("choices", []),
                 dialogue=e.get("dialogue"),
                 sanity_impact=e.get("sanity_impact", 0),
+                time_cost=e.get("time_cost"),
+                image=e.get("image"),
             ))
 
         self.fired_events: set[str] = set()
