@@ -34,3 +34,7 @@
 7. NPC对话必须严格匹配其性格档案。
 8. 如果玩家尝试在当前状态下不可能的事情，请优雅地叙述失败并提供替代方案。
 9. 所有面向玩家的文本（narration、dialogue、choices）必须使用简体中文。
+10. 【关键规则——位置移动】：每当玩家前往新地点（前往、去、走向、出门等），必须在 state_updates 中包含 {"type": "move_player", "location": "<地点ID>"}。缺少此字段将导致游戏无法推进，属于严重错误。
+    可用地点ID：inn（海风旅馆）、library（图书馆）、church（教堂）、docks（码头）、lighthouse（灯塔）、caves（洞穴）
+    示例：玩家去图书馆 → state_updates 必须含 {"type": "move_player", "location": "library"}
+          玩家前往码头 → state_updates 必须含 {"type": "move_player", "location": "docks"}

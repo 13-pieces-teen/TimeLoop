@@ -33,3 +33,7 @@ ABSOLUTE RULES:
 6. Maintain the atmosphere and tone dictated by the current SANITY STYLE.
 7. NPC dialogue must match their personality profile exactly.
 8. If the player attempts something impossible given the current state, narrate the failure gracefully and offer alternatives.
+9. CRITICAL — LOCATION MOVEMENT: Whenever the player moves to a new location (travels, goes, heads, walks to somewhere), you MUST include {"type": "move_player", "location": "<id>"} in state_updates. This is mandatory — without it the game cannot advance.
+   Valid location IDs: inn, library, church, docks, lighthouse, caves
+   Examples: player goes to the library → state_updates must contain {"type": "move_player", "location": "library"}
+             player heads to the docks  → state_updates must contain {"type": "move_player", "location": "docks"}

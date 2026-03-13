@@ -104,15 +104,25 @@ CSS = """
 .narration-panel strong { color: #7eb8da !important; }
 .narration-panel em { color: #a8b2d1 !important; }
 
-/* -- Choice buttons -- */
+/* -- Action area (vertical choices + input) -- */
+.action-area {
+    gap: 6px !important;
+    margin-top: 8px !important;
+}
+
+/* -- Choice buttons (vertical cards) -- */
 .choice-btn {
-    min-height: 52px !important;
+    min-height: 44px !important;
     font-size: 0.95em !important;
     border: 1px solid #1e2a4a !important;
     transition: all 0.2s ease !important;
     white-space: normal !important;
     line-height: 1.4 !important;
-    padding: 10px 16px !important;
+    padding: 10px 20px !important;
+    text-align: left !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    border-radius: 6px !important;
 }
 .choice-btn:hover {
     border-color: #3d5a80 !important;
@@ -141,6 +151,114 @@ CSS = """
     color: #8892b0 !important;
     background: #0d1117 !important;
     border-color: #1e2a4a !important;
+}
+
+/* -- Status panel (HTML) -- */
+.status-html {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.9em;
+    color: #8892b0;
+    max-height: 520px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #1e2a4a #0d1117;
+}
+.sp-section {
+    background: #0d1117;
+    border: 1px solid #1e2a4a;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}
+.sp-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #5a6785;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+/* items */
+.sp-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    color: #a8b2d1;
+    font-size: 0.88em;
+}
+.sp-item-icon {
+    font-size: 1.1em;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.sp-item-name { flex: 1; }
+/* npc rows */
+.sp-npc { margin-bottom: 8px; }
+.sp-npc-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+.sp-npc-name {
+    flex: 1;
+    color: #ccd6f6;
+    font-size: 0.88em;
+    font-weight: 600;
+}
+.sp-dots { display: flex; gap: 3px; }
+.sp-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1f2937;
+    border: 1px solid #374151;
+}
+.sp-dot.filled-gray { background: #6b7280; border-color: #6b7280; }
+.sp-dot.filled-blue { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 4px #3b82f633; }
+.sp-dot.filled-green { background: #22c55e; border-color: #22c55e; box-shadow: 0 0 4px #22c55e33; }
+.sp-dot.filled-gold { background: #eab308; border-color: #eab308; box-shadow: 0 0 4px #eab30833; }
+.sp-trust-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    color: #5a6785;
+    min-width: 20px;
+    text-align: right;
+}
+.sp-npc-hint {
+    font-size: 0.78em;
+    color: #5a6785;
+    font-style: italic;
+    padding-left: 4px;
+}
+.sp-npc-loc {
+    font-size: 0.75em;
+    color: #4b5563;
+    padding-left: 4px;
+}
+/* facts */
+.sp-cat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68em;
+    color: #3b82f6;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+.sp-fact {
+    padding: 2px 0 2px 8px;
+    font-size: 0.82em;
+    color: #8892b0;
+    border-left: 2px solid #1e2a4a;
+    margin-bottom: 3px;
+    line-height: 1.4;
+}
+.sp-empty {
+    color: #4b5563;
+    font-style: italic;
+    font-size: 0.85em;
 }
 
 /* -- Game control buttons -- */
@@ -334,6 +452,145 @@ CSS = """
     border-color: #1e2a4a !important;
     margin-top: 8px !important;
 }
+
+/* -- Debug toggle (tiny corner button) -- */
+.debug-toggle-btn {
+    position: fixed !important;
+    bottom: 8px !important;
+    right: 8px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 24px !important;
+    font-size: 9px !important;
+    opacity: 0.25 !important;
+    z-index: 999 !important;
+    padding: 0 !important;
+}
+.debug-toggle-btn:hover { opacity: 0.8 !important; }
+
+/* ============================================================
+   SANITY VISUAL EFFECTS -- 4-level progressive UI corruption
+   ============================================================ */
+
+/* --- Keyframes --- */
+@keyframes san-breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.82; }
+}
+@keyframes san-breathe-fast {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+@keyframes san-breathe-violent {
+    0%, 100% { opacity: 1; }
+    30% { opacity: 0.5; }
+    60% { opacity: 0.9; }
+    80% { opacity: 0.4; }
+}
+@keyframes san-hue-drift {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(8deg); }
+}
+@keyframes san-hue-violent {
+    0%, 100% { filter: hue-rotate(0deg) saturate(1.1); }
+    33% { filter: hue-rotate(12deg) saturate(1.3); }
+    66% { filter: hue-rotate(-5deg) saturate(0.9); }
+}
+@keyframes san-skew-subtle {
+    0%, 100% { transform: skewX(0deg); }
+    25% { transform: skewX(-0.3deg); }
+    75% { transform: skewX(0.3deg); }
+}
+@keyframes san-skew-violent {
+    0%, 100% { transform: skewX(0deg) skewY(0deg) scale(1); }
+    15% { transform: skewX(-0.6deg) skewY(0.2deg) scale(1.002); }
+    40% { transform: skewX(0.8deg) skewY(-0.3deg) scale(0.998); }
+    65% { transform: skewX(-0.4deg) skewY(0.4deg) scale(1.003); }
+    85% { transform: skewX(0.5deg) skewY(-0.1deg) scale(0.997); }
+}
+@keyframes san-border-pulse {
+    0%, 100% { border-left-width: 3px; }
+    50% { border-left-width: 6px; }
+}
+@keyframes san-text-shadow-flicker {
+    0%, 100% { text-shadow: none; }
+    20% { text-shadow: 2px 0 #8b250066; }
+    40% { text-shadow: -1px 0 #cc000044; }
+    60% { text-shadow: 1px 1px #8b250055; }
+    80% { text-shadow: none; }
+}
+@keyframes san-text-shadow-violent {
+    0%, 100% { text-shadow: none; }
+    10% { text-shadow: 3px 0 #cc0000aa, -2px 0 #7700cc55; }
+    25% { text-shadow: -2px 1px #cc000088; }
+    40% { text-shadow: 1px -1px #7700cc66, 2px 2px #cc000044; }
+    55% { text-shadow: none; }
+    70% { text-shadow: -3px 0 #cc0000bb, 1px 1px #7700cc77; }
+    85% { text-shadow: 2px -1px #cc000066; }
+}
+@keyframes san-flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.3; }
+    97% { opacity: 0.8; }
+    98% { opacity: 0.1; }
+    99% { opacity: 0.7; }
+}
+@keyframes san-border-color-flicker {
+    0%, 100% { border-color: #1e2a4a; }
+    30% { border-color: #8b2500; }
+    60% { border-color: #1e2a4a; }
+    80% { border-color: #cc0000; }
+}
+@keyframes san-time-jitter {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(1px); }
+    40% { transform: translateX(-2px); }
+    60% { transform: translateX(1px); }
+    80% { transform: translateX(-1px); }
+}
+
+/* --- UNEASY (50-79) --- */
+.info-bar.san-uneasy .san-value {
+    animation: san-breathe 3s ease-in-out infinite;
+}
+.narration-panel.san-uneasy {
+    border-left-color: #92711a !important;
+    background: linear-gradient(135deg, #0d1117 0%, #1a1708 100%) !important;
+}
+
+/* --- DISTORTED (20-49) --- */
+.info-bar.san-distorted .san-value {
+    animation: san-breathe-fast 1.5s ease-in-out infinite;
+}
+.narration-panel.san-distorted {
+    border-left-color: #8b2500 !important;
+    background: linear-gradient(135deg, #0d1117 0%, #170808 100%) !important;
+    animation: san-skew-subtle 4s ease-in-out infinite, san-hue-drift 6s ease-in-out infinite;
+}
+.narration-panel.san-distorted p {
+    animation: san-text-shadow-flicker 5s linear infinite;
+}
+
+/* --- MADNESS (0-19) --- */
+.info-bar.san-madness .san-value {
+    animation: san-breathe-violent 0.5s ease-in-out infinite;
+    filter: blur(0.5px);
+}
+.info-bar.san-madness .meta-time {
+    animation: san-time-jitter 1.5s linear infinite;
+    display: inline-block;
+}
+.narration-panel.san-madness {
+    border-left-color: #cc0000 !important;
+    background: linear-gradient(135deg, #1a0505 0%, #170808 60%, #0d0508 100%) !important;
+    animation:
+        san-skew-violent 3s ease-in-out infinite,
+        san-border-pulse 2s ease-in-out infinite,
+        san-hue-violent 2s linear infinite;
+}
+.narration-panel.san-madness p {
+    animation: san-text-shadow-violent 3s linear infinite, san-flicker 8s step-end infinite;
+}
 """
 
 
@@ -341,7 +598,27 @@ CSS = """
 # Formatters (all accept lang)
 # =====================================================================
 
-def format_narration(result: TurnResult, lang: str = "en") -> str:
+SANITY_FLAVOR = {
+    "lucid": {
+        "en": "A chill passes through you.",
+        "zh": "一阵寒意穿透了你。",
+    },
+    "uneasy": {
+        "en": "The edges of your vision blur momentarily.",
+        "zh": "你视野的边缘短暂地模糊了。",
+    },
+    "distorted": {
+        "en": "Something inside you unravels a little further.",
+        "zh": "你内心深处有什么东西又崩解了一些。",
+    },
+    "madness": {
+        "en": "You can no longer tell if the screaming is yours.",
+        "zh": "你已经分不清那尖叫声是不是你自己发出的。",
+    },
+}
+
+
+def format_narration(result: TurnResult, lang: str = "en", sanity_level: str = "lucid") -> str:
     parts = []
     if result.event_triggered:
         parts.append(f"### {result.event_triggered}\n\n")
@@ -352,12 +629,20 @@ def format_narration(result: TurnResult, lang: str = "en") -> str:
             f'**{result.dialogue_speaker}:**\n\n'
             f'*"{result.dialogue_text}"*'
         )
+
+    delta = result.sanity_delta
+    if delta and delta != 0:
+        flavor = SANITY_FLAVOR.get(sanity_level, SANITY_FLAVOR["lucid"])
+        text = flavor.get(lang, flavor["en"])
+        san_label = "理智" if lang == "zh" else "SAN"
+        parts.append(f"\n\n*{text} ({san_label} {delta:+d})*")
+
     return "".join(parts)
 
 
 def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     if not engine.game_state:
-        return f'<div class="info-bar"><span>{t("press_new_game", lang)}</span></div>'
+        return f'<div class="info-bar san-lucid"><span>{t("press_new_game", lang)}</span></div>'
     gs = engine.game_state
     lm = engine.loop_memory
 
@@ -366,6 +651,7 @@ def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     color = SANITY_COLORS.get(level, "#fff")
     filled = int(sanity / 5)
     bar = "\u2588" * filled + "\u2591" * (20 - filled)
+    level_label = t(f"san_{level}", lang)
 
     loop_info = f"{t('loop_label', lang)} #{gs.loop_count}"
     if lm.total_loops > 0:
@@ -374,12 +660,12 @@ def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     location = loc_name(gs.location, lang)
 
     return (
-        f'<div class="info-bar">'
+        f'<div class="info-bar san-{level}">'
         f'<div class="sanity-section">'
-        f'<span style="color:{color}; font-weight:600;">{bar} {sanity}/100 [{level.upper()}]</span>'
+        f'<span class="san-value" style="color:{color}; font-weight:600;">{bar} {sanity}/100 [{level_label}]</span>'
         f'</div>'
         f'<div class="meta-section">'
-        f'{gs.current_time_str} ({gs.minutes_until_midnight} {t("min_left", lang)}) '
+        f'<span class="meta-time">{gs.current_time_str} ({gs.minutes_until_midnight} {t("min_left", lang)})</span> '
         f'&nbsp;|&nbsp; {loop_info} &nbsp;|&nbsp; {t("turn_label", lang)} {gs.turn} '
         f'&nbsp;|&nbsp; {location}'
         f'</div>'
@@ -387,60 +673,152 @@ def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     )
 
 
-TRUST_THRESHOLDS = [30, 40, 50, 60, 70, 90]
+TRUST_EVENT_THRESHOLDS = [25, 30, 40, 50, 70, 90]
 
 TRUST_HINTS_ZH = {
     "close": "似乎快要对你说什么了",
     "warming": "正在慢慢信任你",
-    "guarded": "对你还很警惕",
 }
 TRUST_HINTS_EN = {
     "close": "seems about to tell you something",
     "warming": "is warming up to you",
-    "guarded": "is still guarded around you",
 }
 
 
 def _get_trust_hint(trust: int, lang: str) -> str:
     hints = TRUST_HINTS_ZH if lang == "zh" else TRUST_HINTS_EN
-    next_threshold = next((t for t in TRUST_THRESHOLDS if t > trust), None)
+    next_threshold = next((th for th in TRUST_EVENT_THRESHOLDS if th > trust), None)
     if next_threshold is None:
         return ""
     gap = next_threshold - trust
     if gap <= 10:
-        return f" -- {hints['close']}"
-    if gap <= 25:
-        return f" -- {hints['warming']}"
+        return hints["close"]
+    if gap <= 20:
+        return hints["warming"]
     return ""
+
+
+def _trust_dots_html(trust: int) -> str:
+    """Render 5 dots representing 0-100 trust (each dot = 20)."""
+    filled = min(5, trust // 20)
+    if trust >= 80:
+        cls = "filled-gold"
+    elif trust >= 50:
+        cls = "filled-green"
+    elif trust >= 20:
+        cls = "filled-blue"
+    else:
+        cls = "filled-gray"
+    dots = []
+    for i in range(5):
+        c = cls if i < filled else ""
+        dots.append(f'<span class="sp-dot {c}"></span>')
+    return "".join(dots)
 
 
 def format_status(engine: GameEngine, lang: str = "en") -> str:
     if not engine.game_state:
         return ""
     gs = engine.game_state
+    desc = engine.descriptions
+    item_descs = desc.get("items", {})
+    fact_descs = desc.get("facts", {})
+    cat_descs = desc.get("categories", {})
 
+    html_parts = ['<div class="status-html">']
+
+    # --- Items ---
     inv_label = t("label_inventory", lang)
-    inv_items = ", ".join(gs.inventory) or t("inventory_empty", lang)
-    lines = [f"{inv_label}: {inv_items}", ""]
+    html_parts.append(f'<div class="sp-section"><div class="sp-header">{inv_label}</div>')
+    if gs.inventory:
+        for item_id in gs.inventory:
+            info = item_descs.get(item_id, {})
+            icon = info.get("icon", "&#8226;")
+            name = info.get(lang, info.get("en", item_id.replace("_", " ")))
+            html_parts.append(
+                f'<div class="sp-item">'
+                f'<span class="sp-item-icon">{icon}</span>'
+                f'<span class="sp-item-name">{name}</span>'
+                f'</div>'
+            )
+    else:
+        empty = t("inventory_empty", lang)
+        html_parts.append(f'<div class="sp-empty">{empty}</div>')
+    html_parts.append('</div>')
 
-    lines.append(f"{t('label_npcs', lang)}:")
+    # --- NPCs ---
+    npc_label = t("label_npcs", lang)
+    here_label = "此地" if lang == "zh" else "Here"
+    html_parts.append(f'<div class="sp-section"><div class="sp-header">{npc_label}</div>')
+
+    here_npcs = []
+    away_npcs = []
     for npc_id, npc in gs.characters.items():
-        here = " *" if npc.location == gs.location else ""
-        bar_len = npc.trust // 10
-        trust_bar = "=" * bar_len + "-" * (10 - bar_len)
+        if npc.location == gs.location and npc.alive:
+            here_npcs.append((npc_id, npc))
+        elif npc.alive:
+            away_npcs.append((npc_id, npc))
+
+    for npc_id, npc in here_npcs:
         hint = _get_trust_hint(npc.trust, lang)
-        lines.append(f"  {npc.name}{here}")
-        lines.append(f"    [{trust_bar}] {npc.trust}{hint}")
+        dots = _trust_dots_html(npc.trust)
+        html_parts.append(f'<div class="sp-npc">')
+        html_parts.append(
+            f'<div class="sp-npc-row">'
+            f'<span class="sp-npc-name">{npc.name}</span>'
+            f'<div class="sp-dots">{dots}</div>'
+            f'<span class="sp-trust-num">{npc.trust}</span>'
+            f'</div>'
+        )
+        if hint:
+            html_parts.append(f'<div class="sp-npc-hint">{hint}</div>')
+        html_parts.append('</div>')
 
+    if away_npcs:
+        for npc_id, npc in away_npcs:
+            loc_label = loc_name(npc.location, lang)
+            dots = _trust_dots_html(npc.trust)
+            html_parts.append(f'<div class="sp-npc">')
+            html_parts.append(
+                f'<div class="sp-npc-row">'
+                f'<span class="sp-npc-name" style="color:#6b7280;">{npc.name}</span>'
+                f'<div class="sp-dots">{dots}</div>'
+                f'<span class="sp-trust-num">{npc.trust}</span>'
+                f'</div>'
+            )
+            html_parts.append(f'<div class="sp-npc-loc">@ {loc_label}</div>')
+            html_parts.append('</div>')
+
+    if not here_npcs and not away_npcs:
+        no_one = "无人" if lang == "zh" else "(no one)"
+        html_parts.append(f'<div class="sp-empty">{no_one}</div>')
+    html_parts.append('</div>')
+
+    # --- Facts ---
+    facts_label = t("label_facts", lang)
+    html_parts.append(f'<div class="sp-section"><div class="sp-header">{facts_label}</div>')
     if gs.discovered_facts:
-        lines.append("")
-        lines.append(f"{t('label_facts', lang)}: {len(gs.discovered_facts)}")
-        for f in gs.discovered_facts[-5:]:
-            lines.append(f"  - {f.replace('_', ' ')}")
-        if len(gs.discovered_facts) > 5:
-            lines.append(f"  ... {t('facts_more', lang, n=str(len(gs.discovered_facts) - 5))}")
+        by_cat: dict[str, list[str]] = {}
+        for fact_id in gs.discovered_facts:
+            info = fact_descs.get(fact_id, {})
+            cat = info.get("category", "other")
+            by_cat.setdefault(cat, []).append(fact_id)
 
-    return "\n".join(lines)
+        for cat_id, fact_ids in by_cat.items():
+            cat_info = cat_descs.get(cat_id, {})
+            cat_label = cat_info.get(lang, cat_info.get("en", cat_id))
+            html_parts.append(f'<div class="sp-cat-label">{cat_label}</div>')
+            for fid in fact_ids:
+                info = fact_descs.get(fid, {})
+                text = info.get(lang, info.get("en", fid.replace("_", " ")))
+                html_parts.append(f'<div class="sp-fact">{text}</div>')
+    else:
+        empty = "尚无线索" if lang == "zh" else "No clues yet"
+        html_parts.append(f'<div class="sp-empty">{empty}</div>')
+    html_parts.append('</div>')
+
+    html_parts.append('</div>')
+    return "".join(html_parts)
 
 
 def format_timeline_html(engine: GameEngine) -> str:
@@ -487,39 +865,33 @@ def create_app() -> gr.Blocks:
                         elem_classes="ctrl-btn lang-btn", size="sm",
                     )
 
-                status_display = gr.Textbox(
+                status_display = gr.HTML(
                     value="",
-                    label=t("label_status", "en"),
-                    lines=16,
-                    max_lines=20,
-                    interactive=False,
                     elem_classes="side-panel",
                 )
 
             # === Center: Narration + Choices + Input ===
             with gr.Column(scale=3, min_width=500):
-                narration_display = gr.Markdown(
-                    value=t("opening_flavor", "en"),
-                    elem_classes="narration-panel",
+                narration_display = gr.HTML(
+                    value=f'<div class="narration-panel san-lucid"><p><em>{t("opening_flavor", "en")}</em></p></div>',
                 )
 
-                with gr.Row(equal_height=True):
+                with gr.Column(elem_classes="action-area"):
                     choice_btn_1 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn")
                     choice_btn_2 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn")
                     choice_btn_3 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn")
-
-                with gr.Row():
-                    player_input = gr.Textbox(
-                        placeholder=t("input_placeholder", "en"),
-                        label="",
-                        show_label=False,
-                        scale=5,
-                        elem_classes="input-area",
-                    )
-                    submit_btn = gr.Button(
-                        t("btn_act", "en"), variant="primary",
-                        scale=1, elem_classes="act-btn",
-                    )
+                    with gr.Row():
+                        player_input = gr.Textbox(
+                            placeholder=t("input_placeholder", "en"),
+                            label="",
+                            show_label=False,
+                            scale=5,
+                            elem_classes="input-area",
+                        )
+                        submit_btn = gr.Button(
+                            t("btn_act", "en"), variant="primary",
+                            scale=1, elem_classes="act-btn",
+                        )
 
         # -- Horizontal event timeline --
         with gr.Column(elem_classes="timeline-section"):
@@ -528,13 +900,18 @@ def create_app() -> gr.Blocks:
                 elem_classes="timeline-wrap",
             )
 
-        # -- Debug accordion --
-        with gr.Accordion(t("debug_panel", "en"), open=False, elem_classes="debug-accordion"):
+        # -- Debug accordion (hidden by default, triple-click title to reveal) --
+        with gr.Accordion(t("debug_panel", "en"), open=False, visible=False, elem_classes="debug-accordion") as debug_accordion:
             with gr.Row():
                 debug_intent = gr.Textbox(label=t("debug_intent", "en"), interactive=False)
                 debug_sanity_delta = gr.Textbox(label=t("debug_sanity_change", "en"), interactive=False)
             debug_consistency = gr.Textbox(label=t("debug_consistency", "en"), lines=3, interactive=False)
             debug_state_json = gr.JSON(label=t("debug_state", "en"))
+
+        debug_toggle_btn = gr.Button(
+            "DBG", variant="secondary", size="sm", visible=True,
+            elem_classes="debug-toggle-btn",
+        )
 
         # -- State --
         choice_state = gr.State(value=[])
@@ -555,7 +932,7 @@ def create_app() -> gr.Blocks:
             if not text.strip():
                 return _no_change()
             engine.lang = lang
-            result = manager.handle_input(text.strip())
+            result = manager.handle_input(text.strip(), choice_sanity_cost=0)
             return _update_ui(result, engine, lang)
 
         def on_choice_click(idx, choices_data, lang):
@@ -563,8 +940,10 @@ def create_app() -> gr.Blocks:
                 return _no_change()
             choice = choices_data[idx]
             text = choice.get("text", choice.get("id", "continue"))
+            san_cost = int(choice.get("sanity_cost", 0))
+            choice_id = choice.get("id", "")
             engine.lang = lang
-            result = manager.handle_input(text)
+            result = manager.handle_input(text, choice_sanity_cost=san_cost, choice_id=choice_id)
             return _update_ui(result, engine, lang)
 
         def on_lang_toggle(current_lang):
@@ -626,6 +1005,18 @@ def create_app() -> gr.Blocks:
                 outputs=game_outputs,
             )
 
+        debug_visible = gr.State(value=False)
+
+        def on_debug_toggle(is_visible):
+            new_vis = not is_visible
+            return new_vis, gr.update(visible=new_vis)
+
+        debug_toggle_btn.click(
+            on_debug_toggle,
+            inputs=[debug_visible],
+            outputs=[debug_visible, debug_accordion],
+        )
+
         lang_toggle_outputs = [
             lang_state,
             lang_toggle_btn,
@@ -647,26 +1038,60 @@ def create_app() -> gr.Blocks:
 # UI update helpers
 # =====================================================================
 
+def _format_choice_label(choice: dict, lang: str) -> str:
+    text = choice.get("text", "...")
+    cost = int(choice.get("sanity_cost", 0))
+    if cost < 0:
+        tag = f"[{'理智' if lang == 'zh' else 'SAN'} {cost}]"
+        return f"{text}  {tag}"
+    return text
+
+
+def _md_to_html(md: str) -> str:
+    """Minimal Markdown-to-HTML for narration display."""
+    import re
+    html = md
+    html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+    html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
+    html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
+    html = re.sub(r'\*(.+?)\*', r'<em>\1</em>', html)
+    html = re.sub(r'\n---\n', r'<hr>', html)
+    paragraphs = html.split('\n\n')
+    parts = []
+    for p in paragraphs:
+        p = p.strip()
+        if not p:
+            continue
+        if p.startswith('<h') or p.startswith('<hr'):
+            parts.append(p)
+        else:
+            parts.append(f'<p>{p}</p>')
+    return '\n'.join(parts)
+
+
 def _update_ui(result: TurnResult, engine: GameEngine, lang: str = "en"):
-    narration = format_narration(result, lang)
+    san_level = engine.game_state.sanity_level if engine.game_state else "lucid"
+    narration_md = format_narration(result, lang, sanity_level=san_level)
     if result.is_ending:
         icon = "---" if result.ending_id in ("sinking_into_the_deep", "sanity_break") else "***"
         title = result.ending_id.replace("_", " ").title()
-        narration += f"\n\n{icon}\n\n## {title}\n\n{result.ending_text}"
+        narration_md += f"\n\n{icon}\n\n## {title}\n\n{result.ending_text}"
+
+    narration_html = f'<div class="narration-panel san-{san_level}">{_md_to_html(narration_md)}</div>'
 
     info_html = format_info_bar(engine, lang)
     status = format_status(engine, lang)
     timeline = format_timeline_html(engine)
 
     choices = result.choices or []
-    btn_labels = [choices[i]["text"] if i < len(choices) else "---" for i in range(3)]
+    btn_labels = [_format_choice_label(choices[i], lang) if i < len(choices) else "---" for i in range(3)]
     btn_interactive = [i < len(choices) for i in range(3)]
 
     state_data = engine.get_state_summary()
 
     return (
         info_html,
-        narration,
+        narration_html,
         status,
         timeline,
         gr.update(value=btn_labels[0], interactive=btn_interactive[0]),

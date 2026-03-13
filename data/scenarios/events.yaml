@@ -226,6 +226,52 @@ events:
         text_zh: "询问小镇的建镇历史"
         sanity_cost: 0
 
+  - id: "silas_deja_vu"
+    act: 2
+    title: "The Sea Remembers"
+    title_zh: "大海记得"
+    trigger:
+      location: "docks"
+      loop_memory_npc_trust: {silas: 30}
+      not_flag: "silas_deja_vu_done"
+    narration: >
+      The old man at the end of the pier stops mending his net before you
+      even speak. His milky left eye turns toward you. He sniffs the air
+      once, twice, and something changes in his face -- a flicker of
+      recognition that has nothing to do with sight.
+    narration_zh: >
+      栈桥尽头的老人在你开口之前就停下了手中的渔网。他浑浊的左眼转向你。
+      他嗅了嗅空气，一下，两下，脸上有什么东西变了——一丝与视觉无关的辨认。
+    dialogue:
+      speaker: "Old Silas"
+      speaker_zh: "老西拉斯"
+      text: >
+        You smell of the sea, child. Not this sea -- another one. One that
+        doesn't exist yet, or doesn't exist anymore. Sit down. You've been
+        here before. Maybe not today, but you've been here. The sea remembers.
+        And so do I.
+      text_zh: >
+        你身上有海的味道，孩子。不是这片海——是另一片。一片还不存在的，
+        或者已经不存在的海。坐下。你来过这里。也许不是今天，但你来过。
+        大海记得。我也记得。
+    effects:
+      - {type: "set_flag", key: "silas_deja_vu_done", value: true}
+      - {type: "set_flag", key: "docks_visited", value: true}
+      - {type: "update_trust", npc: "silas", delta: 25}
+    choices:
+      - id: "ask_silas_what_remember"
+        text: "What do you remember, old man?"
+        text_zh: "你记得什么，老人家？"
+        sanity_cost: 0
+      - id: "ask_silas_entity"
+        text: "Tell me about the thing beneath the water"
+        text_zh: "告诉我水下的那个东西"
+        sanity_cost: -5
+      - id: "ask_silas_elias"
+        text: "Did you know a man named Elias Webb?"
+        text_zh: "你认识一个叫伊莱亚斯·韦伯的人吗？"
+        sanity_cost: 0
+
   - id: "visit_docks"
     act: 2
     title: "The Old Fisherman"
@@ -280,7 +326,7 @@ events:
     title_zh: "玛莎的秘密"
     trigger:
       location: "inn"
-      npc_trust: {martha: 40}
+      npc_trust: {martha: 25}
       not_flag: "martha_husband_revealed"
     narration: >
       Martha's composure finally cracks. She sets down the cup she's been
@@ -324,14 +370,58 @@ events:
         text_zh: "伸手过桌握住她的手"
         sanity_cost: 0
 
+  - id: "martha_letter"
+    act: 3
+    title: "Thomas's Envelope"
+    title_zh: "托马斯的密封信"
+    trigger:
+      location: "inn"
+      npc_trust: {martha: 50}
+      flag: "martha_husband_revealed"
+      not_flag: "martha_letter_opened"
+    narration: >
+      Martha reaches beneath the counter with shaking hands and produces
+      a yellowed envelope, sealed with candle wax. Her voice is barely
+      a whisper.
+    narration_zh: >
+      玛莎用颤抖的双手从柜台下面掏出一个泛黄的信封，用蜡烛封着口。
+      她的声音几乎是耳语。
+    dialogue:
+      speaker: "Martha Holloway"
+      speaker_zh: "玛莎·霍洛威"
+      text: >
+        He left this for me. 'Only open it if I don't come back,' he said.
+        I've been too afraid to look. But if you're going to find what
+        happened to him -- to your friend -- you need this more than I do.
+      text_zh: >
+        这是他留给我的。「只有我回不来的时候才能打开，」他说。我一直不敢看。
+        但如果你要找出他——还有你的朋友——究竟发生了什么，你比我更需要这个。
+    effects:
+      - {type: "set_flag", key: "martha_letter_opened", value: true}
+      - {type: "add_item", item: "thomas_envelope"}
+      - {type: "add_fact", fact: "thomas_letter_map"}
+      - {type: "add_fact", fact: "caves_entrance_known"}
+    choices:
+      - id: "read_map"
+        text: "Open the envelope and study the map inside"
+        text_zh: "打开信封，研究里面的地图"
+        sanity_cost: -5
+      - id: "comfort_martha_again"
+        text: "Thank Martha and promise to bring answers"
+        text_zh: "感谢玛莎，承诺会带回答案"
+        sanity_cost: 0
+      - id: "go_church_passage"
+        text: "The map shows a passage from the church -- head there now"
+        text_zh: "地图标出了教堂的通道——立刻前往"
+        sanity_cost: 0
+
   - id: "eleanor_confession"
     act: 3
     title: "Eleanor's Guilt"
     title_zh: "埃莉诺的愧疚"
     trigger:
       location: "library"
-      npc_trust: {eleanor: 50}
-      fact_required: "elias_stayed_at_inn"
+      npc_trust: {eleanor: 30}
       not_flag: "eleanor_confessed"
     narration: >
       Eleanor closes the library door and turns the lock. Her hands are
@@ -427,8 +517,7 @@ events:
     title_zh: "莫里森的告白"
     trigger:
       location: "church"
-      npc_trust: {morrison: 60}
-      fact_required: "ritual_happens_every_30_years"
+      npc_trust: {morrison: 40}
       not_flag: "morrison_confessed"
     narration: >
       Morrison's hands stop trembling for the first time. He sets down
@@ -480,7 +569,7 @@ events:
     title_zh: "西拉斯目睹的真相"
     trigger:
       location: "docks"
-      npc_trust: {silas: 50}
+      npc_trust: {silas: 30}
       not_flag: "silas_revealed"
     narration: >
       Silas sets down his net. For the first time, his eyes are clear
@@ -578,7 +667,6 @@ events:
     trigger:
       location: "inn"
       flag: "found_elias_journal"
-      fact_required: "ritual_happens_every_30_years"
       not_flag: "faction_chosen"
     narration: >
       You spread Elias's journal and the forbidden texts across the inn's
@@ -615,7 +703,7 @@ events:
     trigger:
       flag: "faction_chosen"
       not_flag: "alliance_resolved"
-      any_input_keyword: ["morrison", "ritual", "stand with", "莫里森", "仪式", "站在", "ally_morrison"]
+      choice_id: "ally_morrison"
     narration: >
       Morrison clasps your hand, his grip surprisingly strong. 'Then we do
       it the old way. Come with me to the church — I'll prepare the candle
@@ -647,7 +735,7 @@ events:
     trigger:
       flag: "faction_chosen"
       not_flag: "alliance_resolved"
-      any_input_keyword: ["eleanor", "research", "trust", "break", "cycle", "埃莉诺", "研究", "相信", "打破", "循环", "ally_eleanor"]
+      choice_id: "ally_eleanor"
     narration: >
       Eleanor's eyes blaze with desperate hope. 'Elias was right. The lens
       can refract the seal into permanence — but you need to understand the

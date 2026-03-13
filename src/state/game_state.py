@@ -144,6 +144,9 @@ class GameState:
 
     def move_player(self, location: str) -> None:
         self.location = location
+        visited = self.flags.setdefault("_visited_locations", [])
+        if isinstance(visited, list) and location not in visited:
+            visited.append(location)
 
     def add_turn_to_history(self, turn_data: dict) -> None:
         self.turn_history.append(turn_data)

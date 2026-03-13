@@ -18,7 +18,7 @@ from src.state.loop_memory import LoopMemory
 
 logger = logging.getLogger(__name__)
 
-AUTO_TRUST_PER_INTERACTION = 8
+AUTO_TRUST_PER_INTERACTION = 10
 TIME_PER_TURN = 20
 
 
@@ -71,8 +71,15 @@ class GameEngine:
         )
         self.max_retries = consistency_cfg.get("max_retries", 2)
 
+        game_cfg = settings.get("game", {})
+        self.cfg_starting_sanity = game_cfg.get("starting_sanity", 100)
+        self.cfg_sanity_cap = game_cfg.get("sanity_cap", 100)
+        self.cfg_time_per_turn = game_cfg.get("time_per_turn_minutes", TIME_PER_TURN)
+
         events_path = self.data_dir / "scenarios" / "events.yaml"
         self.event_system = EventSystem(events_path) if events_path.exists() else None
+
+        self.descriptions = self._load_descriptions()
 
         self.lang = lang
         self.game_state: GameState | None = None
@@ -84,6 +91,14 @@ class GameEngine:
         settings_path = self.config_dir / "settings.yaml"
         if settings_path.exists():
             with open(settings_path, "r", encoding="utf-8") as f:
+                return yaml.safe_load(f) or {}
+        return {}
+
+    def _load_descriptions(self) -> dict:
+        import yaml
+        desc_path = self.data_dir / "scenarios" / "descriptions.yaml"
+        if desc_path.exists():
+            with open(desc_path, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         return {}
 
@@ -118,7 +133,9 @@ class GameEngine:
             self.data_dir / "scenarios" / "npcs.yaml",
         )
         self.game_state.loop_count = self.loop_memory.total_loops + 1
-        self.game_state.sanity = min(100, 100 - max(0, self.loop_memory.total_loops * 5))
+        cap = self.cfg_sanity_cap
+        base = self.cfg_starting_sanity
+        self.game_state.sanity = min(cap, base - max(0, self.loop_memory.total_loops * 5))
         self.game_state.discovered_facts = list(self.loop_memory.discovered_facts)
 
         for npc_id, npc in self.game_state.characters.items():
@@ -150,7 +167,7 @@ class GameEngine:
         state_logs = self.game_state.apply_state_updates(event.effects)
         sanity_delta = event.sanity_impact
         self.game_state.modify_sanity(sanity_delta)
-        self.game_state.advance_time(TIME_PER_TURN)
+        self.game_state.advance_time(self.cfg_time_per_turn)
 
         narration = event.get_narration(lang)
         dialogue = event.get_dialogue(lang)
@@ -189,9 +206,15 @@ class GameEngine:
     # Turn processing
     # ------------------------------------------------------------------
 
-    def process_turn(self, player_input: str) -> TurnResult:
+    def process_turn(self, player_input: str, choice_sanity_cost: int = 0, choice_id: str = "") -> TurnResult:
         if not self.game_state:
             return TurnResult(error="No active game. Call new_game() first.")
+
+        if choice_sanity_cost:
+            self.game_state.modify_sanity(choice_sanity_cost)
+
+        if self.event_system and choice_id:
+            self.event_system.last_choice_id = choice_id
 
         self.game_state.turn += 1
 
@@ -204,7 +227,9 @@ class GameEngine:
                 self.game_state, self.loop_memory, player_input
             )
             if event:
+                self.event_system.last_choice_id = ""
                 return self._apply_event(event)
+            self.event_system.last_choice_id = ""
 
         # --- Auto trust: interacting with NPCs at your location ---
         self._auto_trust_gain(player_input)
@@ -284,6 +309,7 @@ class GameEngine:
             )
 
         self._apply_parsed_output(parsed)
+        self._infer_location_from_input(player_input, parsed)
         self._log_turn(player_input, parsed)
 
         if self.event_system and parsed.entities:
@@ -321,6 +347,42 @@ class GameEngine:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    # keyword → location_id mapping (order matters: more specific first)
+    _LOCATION_KEYWORDS: list[tuple[str, list[str]]] = [
+        ("lighthouse", ["lighthouse", "灯塔"]),
+        ("library",    ["library", "图书馆", "书馆"]),
+        ("church",     ["church", "教堂", "圣安德鲁", "st. andrew"]),
+        ("docks",      ["dock", "docks", "pier", "码头", "栈桥", "渔港"]),
+        ("caves",      ["cave", "caves", "洞穴", "山洞", "洞口"]),
+        ("inn",        ["inn", "旅馆", "旅店", "hotel"]),
+    ]
+
+    def _infer_location_from_input(
+        self, player_input: str, parsed: "ParsedOutput"
+    ) -> bool:
+        """Fallback: if the LLM forgot move_player, infer location from input + entities.
+
+        Runs after _apply_parsed_output. Returns True if location was changed.
+        """
+        if not self.game_state:
+            return False
+        if any(u.get("type") == "move_player" for u in parsed.state_updates):
+            return False  # LLM already handled it
+
+        entity_loc = (parsed.entities or {}).get("location", "")
+        combined = f"{player_input} {entity_loc}".lower()
+
+        for loc_id, keywords in self._LOCATION_KEYWORDS:
+            if loc_id == self.game_state.location:
+                continue
+            if any(kw in combined for kw in keywords):
+                logger.info(
+                    "Auto-inferred move_player to %s (LLM omitted it)", loc_id
+                )
+                self.game_state.move_player(loc_id)
+                return True
+        return False
 
     def _auto_trust_gain(self, player_input: str) -> None:
         """Every interaction at an NPC's location grants a small trust boost."""
@@ -398,17 +460,85 @@ class GameEngine:
         )
 
     def _handle_midnight(self) -> TurnResult:
+        base = (
+            "The church bells begin to toll. One. Two. Three... The sound "
+            "reverberates through your skull, each strike erasing the world a "
+            "little more. The streets dissolve. The buildings fold inward. "
+            "Midnight. The loop closes. And then -- dusk. The salt wind. "
+            "The letter in your pocket. Again."
+        ) if self.lang != "zh" else (
+            "教堂钟声响起。一下。两下。三下……声波穿透你的头骨，每一击都在抹去"
+            "更多的世界。街道溶解。建筑向内折叠。午夜。循环闭合。然后——黄昏。"
+            "咸涩的海风。口袋里的信。又一次。"
+        )
+        hints = self._build_loop_hints()
+        narration = f"{base}\n\n{hints}" if hints else base
         return TurnResult(
-            narration=(
-                "The church bells begin to toll. One. Two. Three... The sound "
-                "reverberates through your skull, each strike erasing the world a "
-                "little more. The streets dissolve. The buildings fold inward. "
-                "Midnight. The loop closes. And then -- dusk. The salt wind. "
-                "The letter in your pocket. Again."
-            ),
+            narration=narration,
             choices=[],
             is_ending=False,
         )
+
+    ALL_EXPLORABLE_LOCATIONS = ["inn", "library", "church", "docks"]
+
+    def _build_loop_hints(self) -> str:
+        if not self.game_state:
+            return ""
+        gs = self.game_state
+        lang = self.lang
+        hints: list[str] = []
+
+        visited = gs.flags.get("_visited_locations", [])
+        if not isinstance(visited, list):
+            visited = []
+
+        loc_names_map = {
+            "library": ("图书馆", "the Library"),
+            "church": ("教堂", "the Church"),
+            "docks": ("码头", "the Docks"),
+            "lighthouse": ("灯塔", "the Lighthouse"),
+        }
+        for loc_id in self.ALL_EXPLORABLE_LOCATIONS:
+            if loc_id != "inn" and loc_id not in visited:
+                zh, en = loc_names_map.get(loc_id, (loc_id, loc_id))
+                if lang == "zh":
+                    hints.append(f"你还未去过{zh}，那里可能藏有线索")
+                else:
+                    hints.append(f"You haven't visited {en} yet -- there may be clues there")
+
+        for npc_id, npc in gs.characters.items():
+            if not npc.alive:
+                continue
+            if self.event_system:
+                for event in self.event_system.events:
+                    if event.id in self.event_system.fired_events:
+                        continue
+                    trust_req = event.trigger.get("npc_trust", {}).get(npc_id)
+                    if trust_req and 0 < trust_req - npc.trust <= 15:
+                        if lang == "zh":
+                            hints.append(f"{npc.name}似乎还有话没说完（信任: {npc.trust}/{trust_req}）")
+                        else:
+                            hints.append(f"{npc.name} seems to have more to say (trust: {npc.trust}/{trust_req})")
+                        break
+
+        if not hints:
+            return ""
+
+        new_facts = len([f for f in gs.discovered_facts
+                         if f not in self.loop_memory.discovered_facts])
+        npcs_met = sum(1 for n in gs.characters.values() if n.met and n.alive)
+
+        if lang == "zh":
+            header = "─── 你的调查笔记 ───"
+            summary = f"本轮你发现了 {new_facts} 条新线索，与 {npcs_met} 位NPC交谈。"
+            next_label = "下一轮建议："
+        else:
+            header = "--- Your Investigation Notes ---"
+            summary = f"This loop you found {new_facts} new clue(s) and spoke with {npcs_met} NPC(s)."
+            next_label = "Next loop suggestions:"
+
+        bullet = "\n".join(f"  \u25b8 {h}" for h in hints[:4])
+        return f"{header}\n{summary}\n\n{next_label}\n{bullet}"
 
     def _check_endings(self) -> dict | None:
         if not self.game_state:

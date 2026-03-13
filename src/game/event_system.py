@@ -83,10 +83,12 @@ class EventSystem:
             ))
 
         self.fired_events: set[str] = set()
+        self.last_choice_id: str = ""
 
     def reset_for_new_loop(self, loop_memory: LoopMemory) -> None:
         """Reset fired events for a new loop, keeping cross-loop unlocks."""
         self.fired_events = set()
+        self.last_choice_id = ""
 
     def check_events(
         self,
@@ -151,6 +153,15 @@ class EventSystem:
             input_lower = player_input.lower()
             if not any(kw.lower() in input_lower for kw in keywords):
                 return False
+
+        if "choice_id" in trigger:
+            if self.last_choice_id != trigger["choice_id"]:
+                return False
+
+        if "loop_memory_npc_trust" in trigger:
+            for npc_id, min_trust in trigger["loop_memory_npc_trust"].items():
+                if lm.npc_max_trust.get(npc_id, 0) < min_trust:
+                    return False
 
         return True
 
