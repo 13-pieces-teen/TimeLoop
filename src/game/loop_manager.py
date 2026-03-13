@@ -17,7 +17,13 @@ class LoopManager:
         self.awaiting_loop_restart = False
         return result
 
-    def handle_input(self, player_input: str, choice_sanity_cost: int = 0, choice_id: str = "") -> TurnResult:
+    def handle_input(
+        self,
+        player_input: str,
+        choice_sanity_cost: int = 0,
+        choice_id: str = "",
+        trust_bonus: dict[str, int] | None = None,
+    ) -> TurnResult:
         if not self.is_game_active:
             return self.start_new_game()
 
@@ -25,7 +31,12 @@ class LoopManager:
             self.awaiting_loop_restart = False
             return self.engine.new_loop()
 
-        result = self.engine.process_turn(player_input, choice_sanity_cost=choice_sanity_cost, choice_id=choice_id)
+        result = self.engine.process_turn(
+            player_input,
+            choice_sanity_cost=choice_sanity_cost,
+            choice_id=choice_id,
+            trust_bonus=trust_bonus,
+        )
 
         if result.is_ending:
             if result.ending_id in ("sinking_into_the_deep", "sanity_break"):

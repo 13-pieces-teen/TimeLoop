@@ -12,7 +12,7 @@ game:
   sanity_recovery_per_loop: 20
   sanity_cap: 100
   time_start: "8:00 PM"
-  time_per_turn_minutes: 30
+  time_per_turn_minutes: 20
   midnight: "12:00 AM"
 
 consistency:

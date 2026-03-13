@@ -104,6 +104,34 @@ CSS = """
 .narration-panel strong { color: #7eb8da !important; }
 .narration-panel em { color: #a8b2d1 !important; }
 
+/* -- Narration background image overlay -- */
+.narration-panel.has-bg {
+    position: relative;
+    min-height: 280px !important;
+    background-size: cover !important;
+    background-position: center top !important;
+    background-repeat: no-repeat !important;
+}
+.narration-panel.has-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(13,17,23, 0.15) 0%,
+        rgba(13,17,23, 0.6) 40%,
+        rgba(19,24,41, 0.95) 75%,
+        rgba(19,24,41, 1) 100%
+    );
+    border-radius: inherit;
+    z-index: 0;
+    pointer-events: none;
+}
+.narration-panel.has-bg > * {
+    position: relative;
+    z-index: 1;
+}
+
 /* -- Action area (vertical choices + input) -- */
 .action-area {
     gap: 6px !important;
@@ -942,8 +970,12 @@ def create_app() -> gr.Blocks:
             text = choice.get("text", choice.get("id", "continue"))
             san_cost = int(choice.get("sanity_cost", 0))
             choice_id = choice.get("id", "")
+            trust_bonus = choice.get("trust_bonus", {})
             engine.lang = lang
-            result = manager.handle_input(text, choice_sanity_cost=san_cost, choice_id=choice_id)
+            result = manager.handle_input(
+                text, choice_sanity_cost=san_cost, choice_id=choice_id,
+                trust_bonus=trust_bonus,
+            )
             return _update_ui(result, engine, lang)
 
         def on_lang_toggle(current_lang):
@@ -1077,7 +1109,13 @@ def _update_ui(result: TurnResult, engine: GameEngine, lang: str = "en"):
         title = result.ending_id.replace("_", " ").title()
         narration_md += f"\n\n{icon}\n\n## {title}\n\n{result.ending_text}"
 
-    narration_html = f'<div class="narration-panel san-{san_level}">{_md_to_html(narration_md)}</div>'
+    bg_cls = ""
+    bg_style = ""
+    if result.event_image:
+        bg_cls = " has-bg"
+        img_url = f"/file=data/images/events/{result.event_image}"
+        bg_style = f' style="background-image: url({img_url});"'
+    narration_html = f'<div class="narration-panel san-{san_level}{bg_cls}"{bg_style}>{_md_to_html(narration_md)}</div>'
 
     info_html = format_info_bar(engine, lang)
     status = format_status(engine, lang)
