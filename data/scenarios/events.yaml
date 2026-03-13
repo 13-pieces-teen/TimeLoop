@@ -136,6 +136,312 @@ events:
         text_zh: "感谢她，出门调查小镇"
         sanity_cost: 0
 
+  # ===== FOREKNOWLEDGE EVENTS (Cross-loop knowledge) =====
+
+  - id: "confront_martha_whispers"
+    act: 2
+    image: "martha_husband.png"
+    title: "You Already Know"
+    title_zh: "你已经知道了"
+    trigger:
+      location: "inn"
+      fact_required: "thomas_holloway_heard_whispers"
+      not_flag: ["martha_husband_revealed", "confront_martha_done"]
+      min_loop: 2
+    narration: >
+      Martha is wiping the counter when you sit down across from her. She
+      starts to offer you stew, but you speak first, quietly.
+    narration_zh: >
+      玛莎正在擦拭柜台，你在她对面坐下。她刚要招呼你吃点东西，但你先开了口，
+      声音很轻。
+    dialogue:
+      speaker: "You"
+      speaker_zh: "你"
+      text: >
+        Your husband Thomas. Before he disappeared, he started hearing
+        something from the sea. A song. Beautiful, he said. He went to the
+        docks at night. And then one morning... he was gone.
+      text_zh: >
+        你的丈夫托马斯。在他失踪之前，他开始听到来自大海的声音。一首歌。
+        很美，他说。他开始夜里去码头。然后有一天早上……他就不在了。
+    effects:
+      - {type: "set_flag", key: "confront_martha_done", value: true}
+      - {type: "set_flag", key: "martha_husband_revealed", value: true}
+      - {type: "update_trust", npc: "martha", delta: 20}
+      - {type: "add_fact", fact: "thomas_holloway_missing_six_months"}
+      - {type: "add_fact", fact: "multiple_people_have_disappeared"}
+    choices:
+      - id: "comfort_martha_loop"
+        text: "I know this is hard. I'm trying to find out what happened to him."
+        text_zh: "我知道这很难受。我在试着查清他发生了什么。"
+        sanity_cost: 0
+        trust_bonus: {martha: 15}
+      - id: "ask_envelope_direct"
+        text: "Did Thomas leave anything behind? A letter, perhaps?"
+        text_zh: "托马斯有没有留下什么东西？也许是一封信？"
+        sanity_cost: 0
+        trust_bonus: {martha: 10}
+      - id: "how_do_you_know"
+        text: "I've... been here before. In a way you wouldn't believe."
+        text_zh: "我……来过这里。以一种你不会相信的方式。"
+        sanity_cost: 0
+        trust_bonus: {martha: 5}
+
+  - id: "confront_eleanor_ritual"
+    act: 2
+    image: "visit_library.png"
+    title: "Words You Shouldn't Know"
+    title_zh: "你不该知道的文字"
+    trigger:
+      location: "library"
+      fact_required: "ritual_happens_every_30_years"
+      not_flag: ["eleanor_confessed", "confront_eleanor_done"]
+      min_loop: 2
+    narration: >
+      Eleanor looks up from her reading as you approach the desk. Before she
+      can offer her usual professional greeting, you lean in and speak in a
+      low voice.
+    narration_zh: >
+      你走向前台时，埃莉诺从书中抬起头。在她来得及说出惯常的职业问候之前，
+      你俯身低声说道。
+    dialogue:
+      speaker: "You"
+      speaker_zh: "你"
+      text: >
+        The sealing ritual. Every thirty years. A willing sacrifice to keep
+        something asleep beneath the bay. Your grandmother was the keeper
+        of that knowledge. And you've been translating the forbidden texts
+        in the restricted section.
+      text_zh: >
+        封印仪式。每三十年一次。一个自愿的祭品，用来让海湾之下的某个东西
+        继续沉睡。你的祖母是那些知识的守护者。而你一直在翻译禁区里的
+        禁忌文献。
+    effects:
+      - {type: "set_flag", key: "confront_eleanor_done", value: true}
+      - {type: "update_trust", npc: "eleanor", delta: 20}
+      - {type: "add_item", item: "lighthouse_key"}
+      - {type: "set_flag", key: "lighthouse_unlocked", value: true}
+    choices:
+      - id: "tell_eleanor_loop"
+        text: "I'm caught in a time loop. I've lived this day before."
+        text_zh: "我陷入了时间循环。我以前活过这一天。"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 15}
+      - id: "ask_alternative_early"
+        text: "There's another way. Elias found it. The lighthouse lens."
+        text_zh: "有另一条路。伊莱亚斯找到了。灯塔透镜。"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 10}
+      - id: "research_together"
+        text: "Show me the forbidden texts. We can work faster together."
+        text_zh: "让我看看禁忌文献。我们一起研究会更快。"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 10}
+
+  - id: "confront_morrison_lighthouse"
+    act: 3
+    image: "morrison_truth.png"
+    title: "The Priest's Mask Cracks"
+    title_zh: "牧师的面具碎了"
+    trigger:
+      location: "church"
+      fact_required: "morrison_locked_elias_in_lighthouse"
+      not_flag: ["morrison_confessed", "confront_morrison_done"]
+      min_loop: 2
+    narration: >
+      Morrison is adjusting the altar candles when you enter. He turns with
+      his usual composed greeting, but you cut through it.
+    narration_zh: >
+      你走进教堂时，莫里森正在调整祭坛上的蜡烛。他转过身，带着惯常的沉稳
+      问候，但你直接打断了他。
+    dialogue:
+      speaker: "You"
+      speaker_zh: "你"
+      text: >
+        I know what you did to Elias Webb. You locked him in the lighthouse
+        to stop his research. He found another way -- a way that doesn't
+        require a sacrifice -- and you were afraid of it.
+      text_zh: >
+        我知道你对伊莱亚斯·韦伯做了什么。你把他锁在灯塔里，想阻止他的
+        研究。他找到了另一条路——一条不需要祭品的路——而你害怕了。
+    effects:
+      - {type: "set_flag", key: "confront_morrison_done", value: true}
+      - {type: "update_trust", npc: "morrison", delta: 25}
+    choices:
+      - id: "demand_lighthouse"
+        text: "Take me to the lighthouse. Now."
+        text_zh: "带我去灯塔。现在。"
+        sanity_cost: 0
+        trust_bonus: {morrison: 10}
+      - id: "ask_ritual_direct"
+        text: "Tell me about the ritual. All of it. No more lies."
+        text_zh: "把仪式的事全告诉我。不要再撒谎了。"
+        sanity_cost: 0
+        trust_bonus: {morrison: 15}
+      - id: "offer_forgiveness"
+        text: "I'm not here to judge you. I'm here to find another way."
+        text_zh: "我不是来审判你的。我是来寻找另一条路的。"
+        sanity_cost: 0
+        trust_bonus: {morrison: 20}
+
+  - id: "silas_you_have_seen"
+    act: 3
+    image: "silas_truth.png"
+    title: "You Have Seen It"
+    title_zh: "你见过它"
+    trigger:
+      location: "docks"
+      fact_required: "entity_sleeps_beneath_bay"
+      not_flag: ["silas_revealed", "silas_you_have_seen_done"]
+      min_loop: 2
+    narration: >
+      You find Silas at the end of the pier, as always. But this time, before
+      you even speak, he turns to face you. Both eyes -- even the milky one
+      -- are clear. He is not the doddering old man anymore. He has been
+      waiting for someone like you.
+    narration_zh: >
+      你在栈桥尽头找到了西拉斯，一如既往。但这一次，你还没开口，他就转过身
+      面对你。两只眼睛——连浑浊的那只——都变得清澈。他不再是那个含糊的老人了。
+      他一直在等一个像你这样的人。
+    dialogue:
+      speaker: "Old Silas"
+      speaker_zh: "老西拉斯"
+      text: >
+        You've seen it. You know it's down there. Most people who see it
+        go mad. You didn't. That means you're either stronger than me, or
+        you're already mad and don't know it. Either way, you need to hear
+        what comes next. Sit down. This is going to change everything you
+        think you know.
+      text_zh: >
+        你看过了。你知道它在那下面。大多数看到它的人都疯了。你没有。
+        这意味着你要么比我强，要么已经疯了但不知道。无论哪种，你需要
+        听我说接下来的事。坐下。这将改变你以为自己知道的一切。
+    effects:
+      - {type: "set_flag", key: "silas_you_have_seen_done", value: true}
+      - {type: "set_flag", key: "silas_revealed", value: true}
+      - {type: "update_trust", npc: "silas", delta: 30}
+      - {type: "add_fact", fact: "entity_is_dreaming_not_evil"}
+      - {type: "add_fact", fact: "silas_witnessed_the_entity"}
+      - {type: "add_fact", fact: "caves_entrance_known"}
+    sanity_impact: -10
+    choices:
+      - id: "ask_dreamer"
+        text: "What is it? What's really down there?"
+        text_zh: "那是什么？下面到底有什么？"
+        sanity_cost: 0
+        trust_bonus: {silas: 10}
+      - id: "ask_seal_fragment"
+        text: "You took something from the caves. A piece of the seal."
+        text_zh: "你从洞穴里带走了什么东西。一片封印碎片。"
+        sanity_cost: 0
+        trust_bonus: {silas: 15}
+      - id: "ask_guide"
+        text: "Take me there. Show me the caves at low tide."
+        text_zh: "带我去那里。退潮时带我看洞穴。"
+        sanity_cost: -5
+        trust_bonus: {silas: 10}
+
+  - id: "confront_morrison_alternative"
+    act: 3
+    image: "morrison_truth.png"
+    title: "There Is Another Way"
+    title_zh: "还有另一条路"
+    trigger:
+      location: "church"
+      fact_required: "elias_found_alternative_method"
+      flag: "morrison_confessed"
+      not_flag: "confront_morrison_alternative_done"
+      min_loop: 2
+    narration: >
+      Morrison is on his knees before the altar, rosary still. You kneel
+      beside him, and speak the words that will break thirty years of
+      certainty.
+    narration_zh: >
+      莫里森跪在祭坛前，念珠静止不动。你在他身旁跪下，说出了将打碎他
+      三十年信念的话。
+    dialogue:
+      speaker: "You"
+      speaker_zh: "你"
+      text: >
+        Elias found a way. The lighthouse lens can refract the seal and
+        make it permanent. No more sacrifices. No more thirty-year cycles.
+        Arthur Crane didn't have to die. But we can make sure no one
+        else does.
+      text_zh: >
+        伊莱亚斯找到了方法。灯塔透镜可以折射封印，使之永久。不再需要
+        祭品。不再有三十年的循环。亚瑟·克莱恩本不必死。但我们可以确保
+        不会再有人死。
+    effects:
+      - {type: "set_flag", key: "confront_morrison_alternative_done", value: true}
+      - {type: "update_trust", npc: "morrison", delta: 20}
+    choices:
+      - id: "ask_morrison_help_lens"
+        text: "Will you help me? We need the ritual texts and the lens."
+        text_zh: "你愿意帮我吗？我们需要仪式文献和透镜。"
+        sanity_cost: 0
+        trust_bonus: {morrison: 15}
+      - id: "understand_guilt"
+        text: "What happened to Arthur Crane wasn't your fault. But what happens next is your choice."
+        text_zh: "亚瑟·克莱恩的事不是你的错。但接下来发生什么是你的选择。"
+        sanity_cost: 0
+        trust_bonus: {morrison: 20}
+      - id: "demand_basement"
+        text: "Show me the ritual texts in the basement. We're running out of time."
+        text_zh: "让我看地下室的仪式文献。我们时间不多了。"
+        sanity_cost: 0
+        trust_bonus: {morrison: 10}
+
+  - id: "tell_eleanor_morrison_secret"
+    act: 3
+    image: "eleanor_confession.png"
+    title: "What Morrison Did"
+    title_zh: "莫里森做了什么"
+    trigger:
+      location: "library"
+      fact_required: "morrison_locked_elias_in_lighthouse"
+      flag: "eleanor_confessed"
+      not_flag: "tell_eleanor_morrison_done"
+    narration: >
+      Eleanor is at her desk, surrounded by the forbidden texts she no
+      longer bothers to hide from you. You tell her what you've learned,
+      and watch the guilt she's carried for weeks transform into something
+      harder.
+    narration_zh: >
+      埃莉诺坐在桌前，周围散布着她不再费心对你隐藏的禁忌文献。你告诉她
+      你所了解的事，看着她背负了数周的愧疚转化为某种更坚硬的东西。
+    dialogue:
+      speaker: "Eleanor Marsh"
+      speaker_zh: "埃莉诺·马什"
+      text: >
+        Morrison locked him in... I thought Elias just left. I blamed
+        myself for months -- for giving him access, for not stopping him.
+        But Morrison... He took a man's freedom to protect a ritual built
+        on murder. We have to finish what Elias started.
+      text_zh: >
+        莫里森把他锁起来了……我一直以为伊莱亚斯是自己走的。我责怪了自己
+        好几个月——怪自己让他进了禁区，怪自己没有阻止他。但莫里森……他为了
+        守护一个建立在谋杀之上的仪式，夺走了一个人的自由。我们必须完成
+        伊莱亚斯开始的工作。
+    effects:
+      - {type: "set_flag", key: "tell_eleanor_morrison_done", value: true}
+      - {type: "update_trust", npc: "eleanor", delta: 15}
+    choices:
+      - id: "agree_finish_work"
+        text: "Together. We finish this tonight."
+        text_zh: "一起。我们今晚了结这一切。"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 15}
+      - id: "forgive_morrison"
+        text: "Morrison is afraid, not evil. Maybe we can bring him around."
+        text_zh: "莫里森是害怕，不是邪恶。也许我们能说服他。"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 5, morrison: 10}
+      - id: "focus_on_lens"
+        text: "Forget Morrison. Tell me more about the lighthouse lens ritual."
+        text_zh: "别管莫里森了。跟我多说说灯塔透镜仪式。"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 10}
+
   # ===== ACT 2: INVESTIGATION (Turn 3-6) =====
   - id: "visit_library"
     act: 2

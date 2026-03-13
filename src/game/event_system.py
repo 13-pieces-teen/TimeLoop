@@ -133,7 +133,14 @@ class EventSystem:
                 return False
 
         if "not_flag" in trigger:
-            if gs.flags.get(trigger["not_flag"], False):
+            nf = trigger["not_flag"]
+            not_flags = nf if isinstance(nf, list) else [nf]
+            for f in not_flags:
+                if gs.flags.get(f, False):
+                    return False
+
+        if "min_loop" in trigger:
+            if gs.loop_count < trigger["min_loop"]:
                 return False
 
         if "fact_required" in trigger:
