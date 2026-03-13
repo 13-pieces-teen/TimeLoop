@@ -111,6 +111,12 @@ STRINGS: dict[str, dict[str, str]] = {
         "zh": "完整状态",
     },
 
+    # -- Sanity levels --
+    "san_lucid": {"en": "LUCID", "zh": "清醒"},
+    "san_uneasy": {"en": "UNEASY", "zh": "不安"},
+    "san_distorted": {"en": "DISTORTED", "zh": "扭曲"},
+    "san_madness": {"en": "MADNESS", "zh": "疯狂"},
+
     # -- Timeline --
     "timeline_empty": {
         "en": "Press New Game to begin",

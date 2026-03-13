@@ -1,0 +1,124 @@
+facts:
+  # --- Elias ---
+  elias_stayed_at_inn:
+    en: "Elias Webb stayed at the Sea Breeze Inn for about a week before vanishing"
+    zh: "伊莱亚斯·韦伯在海风旅馆住了约一周后失踪"
+    category: "elias"
+  elias_disappeared_three_weeks_ago:
+    en: "Elias disappeared three weeks ago without warning"
+    zh: "伊莱亚斯在三周前毫无预兆地消失了"
+    category: "elias"
+  eleanor_helped_elias:
+    en: "Eleanor gave Elias access to the restricted section of the library"
+    zh: "埃莉诺让伊莱亚斯进入了图书馆禁区"
+    category: "elias"
+  elias_found_thirty_year_pattern:
+    en: "Elias discovered a recurring pattern tied to a 30-year cycle"
+    zh: "伊莱亚斯发现了一个与三十年周期相关的规律"
+    category: "elias"
+  elias_discovered_lens_ritual:
+    en: "Elias theorized the lighthouse lens could permanently refract the seal"
+    zh: "伊莱亚斯推测灯塔透镜可以将封印永久折射"
+    category: "elias"
+  elias_found_alternative_method:
+    en: "Elias found an alternative to human sacrifice using the lighthouse lens"
+    zh: "伊莱亚斯找到了一种用灯塔透镜替代活人祭祀的方法"
+    category: "elias"
+  morrison_locked_elias_in_lighthouse:
+    en: "Father Morrison locked Elias in the lighthouse to stop his research"
+    zh: "莫里森神父把伊莱亚斯锁在灯塔里以阻止他的研究"
+    category: "elias"
+
+  # --- Ritual ---
+  entity_sleeps_beneath_bay:
+    en: "An ancient entity sleeps beneath the bay, dreaming in frequencies humans hear as whispers"
+    zh: "一个远古存在沉睡在海湾之下，以人类听来如低语的频率做着梦"
+    category: "ritual"
+  ritual_requires_sacrifice:
+    en: "The sealing ritual requires a willing human sacrifice"
+    zh: "封印仪式需要一名自愿的活人祭品"
+    category: "ritual"
+  ritual_happens_every_30_years:
+    en: "The ritual must be performed every thirty years to keep the entity dormant"
+    zh: "仪式必须每三十年执行一次以维持那个存在的沉睡"
+    category: "ritual"
+  morrison_performed_last_ritual:
+    en: "Father Morrison performed the last ritual 30 years ago, sacrificing fisherman Arthur Crane"
+    zh: "莫里森神父三十年前执行了上一次仪式，祭品是渔夫亚瑟·克莱恩"
+    category: "ritual"
+
+  # --- Entity ---
+  entity_is_dreaming_not_evil:
+    en: "The entity is not evil -- it is dreaming, and the ritual only forces it back to sleep"
+    zh: "那个存在并非邪恶——它在做梦，仪式只是强迫它重新入睡"
+    category: "entity"
+  silas_witnessed_the_entity:
+    en: "Old Silas saw the entity with his own eyes 30 years ago when the water 'opened like a door'"
+    zh: "老西拉斯三十年前亲眼目睹了那个存在，水面「像一扇门一样打开」"
+    category: "entity"
+  caves_entrance_known:
+    en: "The cave entrance opens at low tide, hidden in the cliff face"
+    zh: "洞穴入口在退潮时显现，藏在悬崖面上"
+    category: "entity"
+
+  # --- NPC ---
+  thomas_holloway_heard_whispers:
+    en: "Martha's husband Thomas began hearing whispers from the sea before he vanished"
+    zh: "玛莎的丈夫托马斯在失踪前开始听到来自大海的低语"
+    category: "npc"
+  thomas_holloway_missing_six_months:
+    en: "Thomas Holloway has been missing for six months"
+    zh: "托马斯·霍洛威已经失踪六个月了"
+    category: "npc"
+  multiple_people_have_disappeared:
+    en: "Multiple people have disappeared from Ravenhollow over the years"
+    zh: "多年来已有多人从雷文霍洛失踪"
+    category: "npc"
+  thomas_letter_map:
+    en: "Thomas left a sealed letter containing a map from the church to the caves"
+    zh: "托马斯留下一封密封信，里面有一张从教堂通往洞穴的路线图"
+    category: "npc"
+
+items:
+  elias_letter:
+    en: "Elias's last letter -- mentions whispers, the ritual, and the lighthouse"
+    zh: "伊莱亚斯的最后一封信——提到了低语、仪式和灯塔"
+    icon: "&#9993;"
+  lighthouse_key:
+    en: "An old brass key to the lighthouse, inherited from Eleanor's grandmother"
+    zh: "埃莉诺从祖母处继承的灯塔黄铜钥匙"
+    icon: "&#128477;"
+  elias_journal:
+    en: "Elias's research journal -- increasingly erratic, final entries in unknown symbols"
+    zh: "伊莱亚斯的研究日记——越来越狂乱，最后几页是未知符号"
+    icon: "&#128214;"
+  lighthouse_lens:
+    en: "The lighthouse lens -- Elias believed it could refract the seal permanently"
+    zh: "灯塔透镜——伊莱亚斯认为它能永久折射封印"
+    icon: "&#128302;"
+  ritual_candle:
+    en: "A thick ritual candle smelling of tallow and myrrh, given by Morrison"
+    zh: "一根厚重的仪式蜡烛，散发牛脂与没药的气味，莫里森给的"
+    icon: "&#128367;"
+  inn_guest_ledger:
+    en: "The inn's guest ledger -- Elias's name is among the recent entries"
+    zh: "旅馆的住客登记簿——近期记录中有伊莱亚斯的名字"
+    icon: "&#128209;"
+  thomas_envelope:
+    en: "Thomas's sealed envelope -- contains a map from the church to the caves"
+    zh: "托马斯的密封信——内有从教堂通往洞穴的路线图"
+    icon: "&#9993;"
+
+categories:
+  elias:
+    en: "Elias Webb"
+    zh: "伊莱亚斯·韦伯"
+  ritual:
+    en: "The Ritual"
+    zh: "封印仪式"
+  entity:
+    en: "The Entity"
+    zh: "海下之物"
+  npc:
+    en: "Townsfolk"
+    zh: "镇民"

@@ -4,7 +4,7 @@ llm:
   model: "Qwen/Qwen2.5-32B-Instruct"  # SiliconFlow default; change as needed
   base_url: ""                         # override from .env; leave empty to use env var
   temperature: 0.7
-  max_tokens: 1024
+  max_tokens: 2048
 
 game:
   max_turns_per_loop: 10
