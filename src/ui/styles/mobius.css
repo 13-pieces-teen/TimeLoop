@@ -1,0 +1,137 @@
+/* ============================================================
+   LOOP RESET -- Mobius Strip Overlay
+   ============================================================ */
+.nf-scene.loop-reset {
+    position: relative;
+    min-height: 420px !important;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.mobius-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: radial-gradient(
+        ellipse at 50% 45%,
+        rgba(15,18,40,0.85) 0%,
+        rgba(8,8,20,0.96) 60%,
+        rgba(5,5,12,0.99) 100%
+    );
+    border-radius: inherit;
+    animation: mobius-overlay-in 0.8s ease-out both;
+}
+
+/* -- Particles floating outward -- */
+.mobius-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.mobius-particle {
+    position: absolute;
+    left: 50%; top: 45%;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: #a78bfa;
+    box-shadow: 0 0 6px #a78bfa99;
+    opacity: 0;
+    animation: mobius-particle-float 4s ease-out infinite;
+}
+.mobius-particle.p1 { --px: -110px; --py: -70px; animation-delay: 0.0s; }
+.mobius-particle.p2 { --px:  120px; --py: -50px; animation-delay: 0.7s; }
+.mobius-particle.p3 { --px:  -70px; --py:  90px; animation-delay: 1.4s; }
+.mobius-particle.p4 { --px:   90px; --py:  60px; animation-delay: 2.1s; }
+.mobius-particle.p5 { --px:  -40px; --py: -95px; animation-delay: 2.8s; }
+.mobius-particle.p6 { --px:   50px; --py:  85px; animation-delay: 3.5s; }
+.mobius-particle.p7 { --px: -130px; --py:  20px; animation-delay: 0.4s; width: 2px; height: 2px; background: #6366f1; }
+.mobius-particle.p8 { --px:  140px; --py: -10px; animation-delay: 1.8s; width: 2px; height: 2px; background: #3b82f6; }
+
+@keyframes mobius-particle-float {
+    0%   { transform: translate(0,0) scale(0); opacity: 0; }
+    15%  { opacity: 0.8; transform: translate(calc(var(--px)*0.15), calc(var(--py)*0.15)) scale(1); }
+    100% { transform: translate(var(--px), var(--py)) scale(0.3); opacity: 0; }
+}
+
+/* -- SVG container with 3D perspective -- */
+.mobius-container {
+    animation: mobius-entrance 1.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.mobius-svg {
+    width: 220px;
+    height: 120px;
+    animation: mobius-hover 6s ease-in-out 1.6s infinite;
+    filter: drop-shadow(0 0 12px rgba(99,102,241,0.4)) drop-shadow(0 0 30px rgba(167,139,250,0.2));
+}
+.mobius-flow {
+    animation: mobius-dash-flow 1.8s linear infinite;
+}
+
+/* -- Text elements -- */
+.mobius-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1em;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #c4b5fd;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px #6366f188, 0 0 40px #6366f144;
+    animation: mobius-text-in 1s ease-out 0.8s both;
+    margin-top: 12px;
+}
+.mobius-loop-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8em;
+    color: #818cf8;
+    letter-spacing: 3px;
+    opacity: 0;
+    animation: mobius-sub-in 0.8s ease-out 1.4s forwards;
+}
+
+/* -- Keyframes -- */
+@keyframes mobius-overlay-in {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes mobius-entrance {
+    0%   { transform: perspective(600px) scale(0.2) rotateY(120deg); opacity: 0; }
+    50%  { transform: perspective(600px) scale(1.08) rotateY(-8deg); opacity: 1; }
+    100% { transform: perspective(600px) scale(1) rotateY(0deg); opacity: 1; }
+}
+@keyframes mobius-hover {
+    0%, 100% { transform: perspective(600px) rotateX(10deg) rotateY(0deg); }
+    25%      { transform: perspective(600px) rotateX(2deg) rotateY(6deg); }
+    50%      { transform: perspective(600px) rotateX(-10deg) rotateY(0deg); }
+    75%      { transform: perspective(600px) rotateX(2deg) rotateY(-6deg); }
+}
+@keyframes mobius-dash-flow {
+    to { stroke-dashoffset: -72; }
+}
+@keyframes mobius-text-in {
+    0%   { opacity: 0; transform: translateY(12px); letter-spacing: 14px; }
+    100% { opacity: 1; transform: translateY(0); letter-spacing: 6px; }
+}
+@keyframes mobius-sub-in {
+    0%   { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 0.7; transform: translateY(0); }
+}
+
+/* Narration text inside Mobius overlay */
+.mobius-narration {
+    max-width: 440px;
+    margin-top: 20px;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 0.85em;
+    line-height: 1.7;
+    color: #8892b0;
+    opacity: 0;
+    animation: mobius-text-in 1.2s ease-out 2s both;
+}
+.mobius-narration p { margin: 0.4em 0; }

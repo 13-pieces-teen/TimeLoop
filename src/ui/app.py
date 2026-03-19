@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import random
+from pathlib import Path
+
 import gradio as gr
 
 from src.game.engine import GameEngine, TurnResult
 from src.game.loop_manager import LoopManager
+from src.state.game_state import SANITY_EFFECTS
 from src.ui.i18n import t, loc_name
 
 SANITY_COLORS = {
@@ -52,574 +56,23 @@ THEME = gr.themes.Base(
     button_secondary_border_color_dark="#1e2a4a",
 )
 
-CSS = """
-/* -- Header -- */
-.header-row { margin-bottom: 4px !important; }
-.game-title {
-    text-align: center;
-    padding: 8px 0 2px 0;
-}
-.game-title h1 {
-    font-size: 1.8em !important;
-    color: #ccd6f6 !important;
-    letter-spacing: 2px;
-    margin-bottom: 0 !important;
-}
-.game-title p {
-    color: #5a6785 !important;
-    font-style: italic;
-    font-size: 0.95em;
-    margin-top: 2px !important;
-}
+def _load_static_assets() -> tuple[str, str]:
+    """Load all CSS and JS from external files at import time."""
+    _ui_dir = Path(__file__).parent
+    styles_dir = _ui_dir / "styles"
+    css_parts: list[str] = []
+    for name in ("base", "status", "timeline", "narrative", "sanity", "mobius"):
+        css_file = styles_dir / f"{name}.css"
+        if css_file.exists():
+            css_parts.append(css_file.read_text(encoding="utf-8"))
+    css = "\n".join(css_parts)
 
-/* -- Top info bar -- */
-.info-bar {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    padding: 8px 16px;
-    background: linear-gradient(90deg, #0f1628 0%, #131829 50%, #0f1628 100%);
-    border: 1px solid #1e2a4a;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85em;
-    color: #8892b0;
-    margin-bottom: 4px;
-}
-.info-bar .sanity-section { flex: 1; }
-.info-bar .meta-section { text-align: right; }
+    js_file = _ui_dir / "scripts" / "typewriter.js"
+    js = js_file.read_text(encoding="utf-8") if js_file.exists() else ""
+    return css, js
 
-/* -- Narration area -- */
-.narration-panel {
-    padding: 24px 28px !important;
-    border-left: 3px solid #1a3a5c !important;
-    background: linear-gradient(135deg, #0d1117 0%, #131829 100%) !important;
-    min-height: 180px !important;
-    font-size: 1.1em !important;
-    line-height: 1.9 !important;
-    color: #c9d1d9 !important;
-    border-radius: 8px !important;
-}
-.narration-panel p { margin-bottom: 12px !important; }
-.narration-panel strong { color: #7eb8da !important; }
-.narration-panel em { color: #a8b2d1 !important; }
 
-/* -- Narration background image overlay -- */
-.narration-panel.has-bg {
-    position: relative;
-    min-height: 280px !important;
-    background-size: cover !important;
-    background-position: center top !important;
-    background-repeat: no-repeat !important;
-}
-.narration-panel.has-bg::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to bottom,
-        rgba(13,17,23, 0.15) 0%,
-        rgba(13,17,23, 0.6) 40%,
-        rgba(19,24,41, 0.95) 75%,
-        rgba(19,24,41, 1) 100%
-    );
-    border-radius: inherit;
-    z-index: 0;
-    pointer-events: none;
-}
-.narration-panel.has-bg > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* -- Action area (vertical choices + input) -- */
-.action-area {
-    gap: 6px !important;
-    margin-top: 8px !important;
-}
-
-/* -- Choice buttons (vertical cards) -- */
-.choice-btn {
-    min-height: 44px !important;
-    font-size: 0.95em !important;
-    border: 1px solid #1e2a4a !important;
-    transition: all 0.2s ease !important;
-    white-space: normal !important;
-    line-height: 1.4 !important;
-    padding: 10px 20px !important;
-    text-align: left !important;
-    width: 100% !important;
-    justify-content: flex-start !important;
-    border-radius: 6px !important;
-}
-.choice-btn:hover {
-    border-color: #3d5a80 !important;
-    background: #1a2744 !important;
-    color: #ccd6f6 !important;
-}
-
-/* -- Input area -- */
-.input-area textarea {
-    background: #0d1117 !important;
-    border-color: #1e2a4a !important;
-    color: #c9d1d9 !important;
-    font-size: 1em !important;
-}
-.act-btn {
-    min-height: 42px !important;
-    font-weight: 600 !important;
-    letter-spacing: 1px !important;
-}
-
-/* -- Side panels -- */
-.side-panel textarea {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 0.8em !important;
-    line-height: 1.6 !important;
-    color: #8892b0 !important;
-    background: #0d1117 !important;
-    border-color: #1e2a4a !important;
-}
-
-/* -- Status panel (HTML) -- */
-.status-html {
-    font-family: 'Crimson Text', serif;
-    font-size: 0.9em;
-    color: #8892b0;
-    max-height: 520px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #1e2a4a #0d1117;
-}
-.sp-section {
-    background: #0d1117;
-    border: 1px solid #1e2a4a;
-    border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-}
-.sp-header {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7em;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: #5a6785;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-}
-/* items */
-.sp-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-    color: #a8b2d1;
-    font-size: 0.88em;
-}
-.sp-item-icon {
-    font-size: 1.1em;
-    width: 20px;
-    text-align: center;
-    flex-shrink: 0;
-}
-.sp-item-name { flex: 1; }
-/* npc rows */
-.sp-npc { margin-bottom: 8px; }
-.sp-npc-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 2px;
-}
-.sp-npc-name {
-    flex: 1;
-    color: #ccd6f6;
-    font-size: 0.88em;
-    font-weight: 600;
-}
-.sp-dots { display: flex; gap: 3px; }
-.sp-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #1f2937;
-    border: 1px solid #374151;
-}
-.sp-dot.filled-gray { background: #6b7280; border-color: #6b7280; }
-.sp-dot.filled-blue { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 4px #3b82f633; }
-.sp-dot.filled-green { background: #22c55e; border-color: #22c55e; box-shadow: 0 0 4px #22c55e33; }
-.sp-dot.filled-gold { background: #eab308; border-color: #eab308; box-shadow: 0 0 4px #eab30833; }
-.sp-trust-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75em;
-    color: #5a6785;
-    min-width: 20px;
-    text-align: right;
-}
-.sp-npc-hint {
-    font-size: 0.78em;
-    color: #5a6785;
-    font-style: italic;
-    padding-left: 4px;
-}
-.sp-npc-loc {
-    font-size: 0.75em;
-    color: #4b5563;
-    padding-left: 4px;
-}
-/* facts */
-.sp-cat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68em;
-    color: #3b82f6;
-    letter-spacing: 1px;
-    margin-top: 6px;
-    margin-bottom: 4px;
-}
-.sp-fact {
-    padding: 2px 0 2px 8px;
-    font-size: 0.82em;
-    color: #8892b0;
-    border-left: 2px solid #1e2a4a;
-    margin-bottom: 3px;
-    line-height: 1.4;
-}
-.sp-empty {
-    color: #4b5563;
-    font-style: italic;
-    font-size: 0.85em;
-}
-
-/* -- Game control buttons -- */
-.ctrl-btn {
-    font-size: 0.85em !important;
-    padding: 6px 12px !important;
-}
-
-/* -- Language toggle -- */
-.lang-btn {
-    min-width: 44px !important;
-    max-width: 44px !important;
-    font-size: 0.8em !important;
-    padding: 4px 8px !important;
-    font-weight: 700 !important;
-    letter-spacing: 1px !important;
-}
-
-/* -- Horizontal timeline -- */
-.timeline-section {
-    margin-top: 8px !important;
-    padding: 0 !important;
-}
-.timeline-wrap {
-    background: linear-gradient(180deg, #0a0d16 0%, #0d1117 100%) !important;
-    border: 1px solid #1e2a4a !important;
-    border-radius: 8px !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-}
-.tl-track {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-    padding: 16px 20px 18px 20px;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #1e2a4a #0d1117;
-}
-.tl-track::-webkit-scrollbar { height: 5px; }
-.tl-track::-webkit-scrollbar-track { background: #0d1117; }
-.tl-track::-webkit-scrollbar-thumb { background: #1e2a4a; border-radius: 4px; }
-
-.tl-act-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-}
-.tl-act-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    padding: 2px 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    white-space: nowrap;
-}
-.tl-act-done { color: #6ee7b7; background: #0d2818; border: 1px solid #16a34a44; }
-.tl-act-current { color: #93c5fd; background: #0c1a3a; border: 1px solid #3b82f644; }
-.tl-act-locked { color: #4b5563; background: #111318; border: 1px solid #1f293744; }
-
-.tl-events {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-}
-
-/* --- Nodes --- */
-.tl-node {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 110px;
-    flex-shrink: 0;
-}
-.tl-dot {
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-bottom: 8px;
-    transition: all 0.3s;
-}
-.tl-dot-done {
-    background: #2dd4bf;
-    box-shadow: 0 0 8px #2dd4bf55;
-}
-.tl-dot-active {
-    background: #3b82f6;
-    box-shadow: 0 0 10px #3b82f688, 0 0 20px #3b82f633;
-    animation: tl-pulse 2s ease-in-out infinite;
-}
-.tl-dot-pending {
-    background: #1f2937;
-    border: 2px solid #374151;
-}
-.tl-dot-locked {
-    background: #111827;
-    border: 2px solid #1f2937;
-}
-
-@keyframes tl-pulse {
-    0%, 100% { box-shadow: 0 0 10px #3b82f688, 0 0 20px #3b82f633; }
-    50% { box-shadow: 0 0 14px #3b82f6aa, 0 0 28px #3b82f655; }
-}
-
-/* --- Cards --- */
-.tl-card {
-    width: 100px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    text-align: center;
-    transition: all 0.2s;
-}
-.tl-card-done {
-    background: #0d2818;
-    border: 1px solid #16a34a55;
-}
-.tl-card-done .tl-title { color: #a7f3d0; }
-.tl-card-done .tl-sub { color: #6ee7b7; }
-
-.tl-card-active {
-    background: #0c1a3a;
-    border: 1px solid #3b82f666;
-    box-shadow: 0 2px 12px #3b82f622;
-}
-.tl-card-active .tl-title { color: #bfdbfe; }
-.tl-card-active .tl-sub { color: #93c5fd; }
-
-.tl-card-pending {
-    background: #111827;
-    border: 1px solid #1f2937;
-}
-.tl-card-pending .tl-title { color: #6b7280; }
-.tl-card-pending .tl-sub { color: #4b5563; }
-
-.tl-card-locked {
-    background: #0d0f14;
-    border: 1px solid #1a1d27;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tl-title {
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 2px;
-}
-.tl-sub {
-    font-size: 9px;
-    opacity: 0.7;
-    line-height: 1.2;
-}
-.tl-lock {
-    font-size: 14px;
-    opacity: 0.3;
-    filter: grayscale(1);
-}
-
-/* --- Connector lines --- */
-.tl-line {
-    width: 24px;
-    height: 2px;
-    margin-top: 8px;
-    flex-shrink: 0;
-    align-self: flex-start;
-    border-radius: 1px;
-}
-.tl-line-done { background: linear-gradient(90deg, #2dd4bf, #2dd4bf88); }
-.tl-line-dim { background: #1f2937; }
-
-.tl-bridge {
-    width: 32px;
-    height: 2px;
-    margin-top: 34px;
-    flex-shrink: 0;
-    border-radius: 1px;
-}
-.tl-bridge-done { background: linear-gradient(90deg, #16a34a66, #16a34a22); }
-.tl-bridge-dim { background: #1a1d2744; }
-
-/* -- Accordion -- */
-.debug-accordion {
-    border-color: #1e2a4a !important;
-    margin-top: 8px !important;
-}
-
-/* -- Debug toggle (tiny corner button) -- */
-.debug-toggle-btn {
-    position: fixed !important;
-    bottom: 8px !important;
-    right: 8px !important;
-    width: 40px !important;
-    min-width: 40px !important;
-    height: 24px !important;
-    font-size: 9px !important;
-    opacity: 0.25 !important;
-    z-index: 999 !important;
-    padding: 0 !important;
-}
-.debug-toggle-btn:hover { opacity: 0.8 !important; }
-
-/* ============================================================
-   SANITY VISUAL EFFECTS -- 4-level progressive UI corruption
-   ============================================================ */
-
-/* --- Keyframes --- */
-@keyframes san-breathe {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.82; }
-}
-@keyframes san-breathe-fast {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-@keyframes san-breathe-violent {
-    0%, 100% { opacity: 1; }
-    30% { opacity: 0.5; }
-    60% { opacity: 0.9; }
-    80% { opacity: 0.4; }
-}
-@keyframes san-hue-drift {
-    0%, 100% { filter: hue-rotate(0deg); }
-    50% { filter: hue-rotate(8deg); }
-}
-@keyframes san-hue-violent {
-    0%, 100% { filter: hue-rotate(0deg) saturate(1.1); }
-    33% { filter: hue-rotate(12deg) saturate(1.3); }
-    66% { filter: hue-rotate(-5deg) saturate(0.9); }
-}
-@keyframes san-skew-subtle {
-    0%, 100% { transform: skewX(0deg); }
-    25% { transform: skewX(-0.3deg); }
-    75% { transform: skewX(0.3deg); }
-}
-@keyframes san-skew-violent {
-    0%, 100% { transform: skewX(0deg) skewY(0deg) scale(1); }
-    15% { transform: skewX(-0.6deg) skewY(0.2deg) scale(1.002); }
-    40% { transform: skewX(0.8deg) skewY(-0.3deg) scale(0.998); }
-    65% { transform: skewX(-0.4deg) skewY(0.4deg) scale(1.003); }
-    85% { transform: skewX(0.5deg) skewY(-0.1deg) scale(0.997); }
-}
-@keyframes san-border-pulse {
-    0%, 100% { border-left-width: 3px; }
-    50% { border-left-width: 6px; }
-}
-@keyframes san-text-shadow-flicker {
-    0%, 100% { text-shadow: none; }
-    20% { text-shadow: 2px 0 #8b250066; }
-    40% { text-shadow: -1px 0 #cc000044; }
-    60% { text-shadow: 1px 1px #8b250055; }
-    80% { text-shadow: none; }
-}
-@keyframes san-text-shadow-violent {
-    0%, 100% { text-shadow: none; }
-    10% { text-shadow: 3px 0 #cc0000aa, -2px 0 #7700cc55; }
-    25% { text-shadow: -2px 1px #cc000088; }
-    40% { text-shadow: 1px -1px #7700cc66, 2px 2px #cc000044; }
-    55% { text-shadow: none; }
-    70% { text-shadow: -3px 0 #cc0000bb, 1px 1px #7700cc77; }
-    85% { text-shadow: 2px -1px #cc000066; }
-}
-@keyframes san-flicker {
-    0%, 95%, 100% { opacity: 1; }
-    96% { opacity: 0.3; }
-    97% { opacity: 0.8; }
-    98% { opacity: 0.1; }
-    99% { opacity: 0.7; }
-}
-@keyframes san-border-color-flicker {
-    0%, 100% { border-color: #1e2a4a; }
-    30% { border-color: #8b2500; }
-    60% { border-color: #1e2a4a; }
-    80% { border-color: #cc0000; }
-}
-@keyframes san-time-jitter {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(1px); }
-    40% { transform: translateX(-2px); }
-    60% { transform: translateX(1px); }
-    80% { transform: translateX(-1px); }
-}
-
-/* --- UNEASY (50-79) --- */
-.info-bar.san-uneasy .san-value {
-    animation: san-breathe 3s ease-in-out infinite;
-}
-.narration-panel.san-uneasy {
-    border-left-color: #92711a !important;
-    background: linear-gradient(135deg, #0d1117 0%, #1a1708 100%) !important;
-}
-
-/* --- DISTORTED (20-49) --- */
-.info-bar.san-distorted .san-value {
-    animation: san-breathe-fast 1.5s ease-in-out infinite;
-}
-.narration-panel.san-distorted {
-    border-left-color: #8b2500 !important;
-    background: linear-gradient(135deg, #0d1117 0%, #170808 100%) !important;
-    animation: san-skew-subtle 4s ease-in-out infinite, san-hue-drift 6s ease-in-out infinite;
-}
-.narration-panel.san-distorted p {
-    animation: san-text-shadow-flicker 5s linear infinite;
-}
-
-/* --- MADNESS (0-19) --- */
-.info-bar.san-madness .san-value {
-    animation: san-breathe-violent 0.5s ease-in-out infinite;
-    filter: blur(0.5px);
-}
-.info-bar.san-madness .meta-time {
-    animation: san-time-jitter 1.5s linear infinite;
-    display: inline-block;
-}
-.narration-panel.san-madness {
-    border-left-color: #cc0000 !important;
-    background: linear-gradient(135deg, #1a0505 0%, #170808 60%, #0d0508 100%) !important;
-    animation:
-        san-skew-violent 3s ease-in-out infinite,
-        san-border-pulse 2s ease-in-out infinite,
-        san-hue-violent 2s linear infinite;
-}
-.narration-panel.san-madness p {
-    animation: san-text-shadow-violent 3s linear infinite, san-flicker 8s step-end infinite;
-}
-"""
+CSS, TYPEWRITER_JS = _load_static_assets()
 
 
 # =====================================================================
@@ -668,6 +121,9 @@ def format_narration(result: TurnResult, lang: str = "en", sanity_level: str = "
     return "".join(parts)
 
 
+ALL_LOCATION_IDS = ["inn", "library", "church", "docks", "lighthouse", "caves"]
+
+
 def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     if not engine.game_state:
         return f'<div class="info-bar san-lucid"><span>{t("press_new_game", lang)}</span></div>'
@@ -676,8 +132,16 @@ def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
 
     sanity = gs.sanity
     level = gs.sanity_level
+    fx = SANITY_EFFECTS.get(level, SANITY_EFFECTS["lucid"])
+    jitter = fx["display_jitter"]
+
+    displayed_sanity = sanity
+    if jitter > 0:
+        displayed_sanity = sanity + random.randint(-jitter, jitter)
+        displayed_sanity = max(-5, min(115, displayed_sanity))
+
     color = SANITY_COLORS.get(level, "#fff")
-    filled = int(sanity / 5)
+    filled = max(0, min(20, int(displayed_sanity / 5)))
     bar = "\u2588" * filled + "\u2591" * (20 - filled)
     level_label = t(f"san_{level}", lang)
 
@@ -685,15 +149,24 @@ def format_info_bar(engine: GameEngine, lang: str = "en") -> str:
     if lm.total_loops > 0:
         loop_info += f" ({t('memories_label', lang)}: {lm.total_loops})"
 
+    time_str = gs.current_time_str
+    min_left = gs.minutes_until_midnight
+    if level == "madness":
+        min_left = min_left + random.randint(-30, 30)
+        time_str = gs.current_time_str.replace(":", f":{random.randint(0, 5)}", 1) if random.random() < 0.3 else time_str
+
     location = loc_name(gs.location, lang)
+    if level == "madness" and random.random() < 0.25:
+        other_locs = [lid for lid in ALL_LOCATION_IDS if lid != gs.location]
+        location = loc_name(random.choice(other_locs), lang)
 
     return (
         f'<div class="info-bar san-{level}">'
         f'<div class="sanity-section">'
-        f'<span class="san-value" style="color:{color}; font-weight:600;">{bar} {sanity}/100 [{level_label}]</span>'
+        f'<span class="san-value" style="color:{color}; font-weight:600;">{bar} {displayed_sanity}/100 [{level_label}]</span>'
         f'</div>'
         f'<div class="meta-section">'
-        f'<span class="meta-time">{gs.current_time_str} ({gs.minutes_until_midnight} {t("min_left", lang)})</span> '
+        f'<span class="meta-time">{time_str} ({min_left} {t("min_left", lang)})</span> '
         f'&nbsp;|&nbsp; {loop_info} &nbsp;|&nbsp; {t("turn_label", lang)} {gs.turn} '
         f'&nbsp;|&nbsp; {location}'
         f'</div>'
@@ -712,6 +185,41 @@ TRUST_HINTS_EN = {
     "warming": "is warming up to you",
 }
 
+TRUST_DESCRIPTIONS = {
+    "en": [
+        (0, "Stranger — guarded"),
+        (20, "Acquaintance — willing to talk"),
+        (40, "Cautious ally — shares some secrets"),
+        (60, "Trusted — confides deeper truths"),
+        (80, "Deep bond — entrusts their fate to you"),
+    ],
+    "zh": [
+        (0, "陌生人——心存戒备"),
+        (20, "点头之交——愿意交谈"),
+        (40, "谨慎的同伴——分享了一些秘密"),
+        (60, "信任——吐露更深的真相"),
+        (80, "深厚羁绊——将命运托付于你"),
+    ],
+}
+
+NPC_COLORS = {
+    "martha": "#d4a574",
+    "morrison": "#8b9dc3",
+    "eleanor": "#7eb8a8",
+    "silas": "#a0a0a0",
+}
+
+MYSTERY_PAIRS = [
+    ("morrison_locked_elias_in_lighthouse", "elias_found_alternative_method",
+     "Why did Morrison lock Elias in the lighthouse?", "莫里森为什么把伊莱亚斯锁在灯塔里？"),
+    ("thomas_holloway_heard_whispers", "martha_hears_whispers_too",
+     "What is the source of the whispers from the sea?", "大海中低语的来源是什么？"),
+    ("ritual_happens_every_30_years", "elias_found_alternative_method",
+     "Is there a way to break the thirty-year cycle?", "有没有办法打破三十年的循环？"),
+    ("entity_sleeps_beneath_bay", "entity_is_dreaming_not_evil",
+     "What is the true nature of the entity beneath the bay?", "海湾之下存在的真正本质是什么？"),
+]
+
 
 def _get_trust_hint(trust: int, lang: str) -> str:
     hints = TRUST_HINTS_ZH if lang == "zh" else TRUST_HINTS_EN
@@ -724,6 +232,15 @@ def _get_trust_hint(trust: int, lang: str) -> str:
     if gap <= 20:
         return hints["warming"]
     return ""
+
+
+def _get_trust_description(trust: int, lang: str) -> str:
+    descs = TRUST_DESCRIPTIONS.get(lang, TRUST_DESCRIPTIONS["en"])
+    result = descs[0][1]
+    for threshold, desc in descs:
+        if trust >= threshold:
+            result = desc
+    return result
 
 
 def _trust_dots_html(trust: int) -> str:
@@ -742,6 +259,54 @@ def _trust_dots_html(trust: int) -> str:
         c = cls if i < filled else ""
         dots.append(f'<span class="sp-dot {c}"></span>')
     return "".join(dots)
+
+
+FALSE_MEMORIES = {
+    "en": [
+        "Elias left a second letter — hidden under the floorboards",
+        "The lighthouse lamp was lit on the night Thomas vanished",
+        "Morrison was seen at the docks at 3 AM, carrying a bundle",
+        "There is a fifth NPC you keep forgetting about",
+        "You've been here before. Not in a loop. Before that.",
+    ],
+    "zh": [
+        "伊莱亚斯留了第二封信——藏在地板下面",
+        "托马斯失踪那晚灯塔的灯亮着",
+        "有人看到莫里森凌晨三点在码头，抱着一个包裹",
+        "有第五个NPC，你一直在遗忘",
+        "你以前来过这里。不是循环。在那之前。",
+    ],
+}
+
+
+def _corrupt_fact(text: str, san_level: str, lang: str) -> str:
+    """Deterministically corrupt a fact string based on sanity level."""
+    if san_level in ("lucid", "uneasy"):
+        return text
+    fx = SANITY_EFFECTS.get(san_level, SANITY_EFFECTS["lucid"])
+    seed = hash(text) & 0xFFFFFFFF
+    rng = random.Random(seed)
+    if rng.random() > fx["fact_corrupt"]:
+        return text
+
+    words = text.split()
+    if not words:
+        return text
+
+    if san_level == "madness":
+        glitch_chars = "░▒▓█▌▐▀▄"
+        n_corrupt = max(1, len(words) // 3)
+        for _ in range(n_corrupt):
+            idx = rng.randrange(len(words))
+            w = words[idx]
+            replacement = "".join(rng.choice(glitch_chars) for _ in range(len(w)))
+            words[idx] = replacement
+    else:
+        idx = rng.randrange(len(words))
+        w = words[idx]
+        words[idx] = w[::-1] if len(w) > 3 else "█" * len(w)
+
+    return " ".join(words)
 
 
 def format_status(engine: GameEngine, lang: str = "en") -> str:
@@ -774,56 +339,44 @@ def format_status(engine: GameEngine, lang: str = "en") -> str:
         html_parts.append(f'<div class="sp-empty">{empty}</div>')
     html_parts.append('</div>')
 
-    # --- NPCs ---
+    # --- NPCs (journal style) ---
     npc_label = t("label_npcs", lang)
-    here_label = "此地" if lang == "zh" else "Here"
     html_parts.append(f'<div class="sp-section"><div class="sp-header">{npc_label}</div>')
 
-    here_npcs = []
-    away_npcs = []
     for npc_id, npc in gs.characters.items():
-        if npc.location == gs.location and npc.alive:
-            here_npcs.append((npc_id, npc))
-        elif npc.alive:
-            away_npcs.append((npc_id, npc))
-
-    for npc_id, npc in here_npcs:
+        if not npc.alive:
+            continue
+        is_here = npc.location == gs.location
+        trust_desc = _get_trust_description(npc.trust, lang)
         hint = _get_trust_hint(npc.trust, lang)
         dots = _trust_dots_html(npc.trust)
+        name_color = NPC_COLORS.get(npc_id, "#ccd6f6")
+        name_style = "" if is_here else ' style="color:#6b7280;"'
+
         html_parts.append(f'<div class="sp-npc">')
         html_parts.append(
             f'<div class="sp-npc-row">'
-            f'<span class="sp-npc-name">{npc.name}</span>'
+            f'<span class="sp-npc-name"{name_style}>'
+            f'<span style="color:{name_color};">&#9679;</span> {npc.name}'
+            f'</span>'
             f'<div class="sp-dots">{dots}</div>'
-            f'<span class="sp-trust-num">{npc.trust}</span>'
             f'</div>'
         )
+        html_parts.append(f'<div class="journal-trust-desc">{trust_desc}</div>')
         if hint:
             html_parts.append(f'<div class="sp-npc-hint">{hint}</div>')
+        if not is_here:
+            loc_label = loc_name(npc.location, lang)
+            html_parts.append(f'<div class="sp-npc-loc">@ {loc_label}</div>')
         html_parts.append('</div>')
 
-    if away_npcs:
-        for npc_id, npc in away_npcs:
-            loc_label = loc_name(npc.location, lang)
-            dots = _trust_dots_html(npc.trust)
-            html_parts.append(f'<div class="sp-npc">')
-            html_parts.append(
-                f'<div class="sp-npc-row">'
-                f'<span class="sp-npc-name" style="color:#6b7280;">{npc.name}</span>'
-                f'<div class="sp-dots">{dots}</div>'
-                f'<span class="sp-trust-num">{npc.trust}</span>'
-                f'</div>'
-            )
-            html_parts.append(f'<div class="sp-npc-loc">@ {loc_label}</div>')
-            html_parts.append('</div>')
-
-    if not here_npcs and not away_npcs:
-        no_one = "无人" if lang == "zh" else "(no one)"
-        html_parts.append(f'<div class="sp-empty">{no_one}</div>')
     html_parts.append('</div>')
 
-    # --- Facts ---
-    facts_label = t("label_facts", lang)
+    # --- Facts (journal notes) — corrupted at low sanity ---
+    san_level = gs.sanity_level
+    facts_label = "调查手记" if lang == "zh" else "Investigation Notes"
+    if san_level == "madness":
+        facts_label = "░调░查░手░记░" if lang == "zh" else "I̷n̷v̷e̷s̷t̷i̷g̷a̷t̷i̷o̷n̷ Notes"
     html_parts.append(f'<div class="sp-section"><div class="sp-header">{facts_label}</div>')
     if gs.discovered_facts:
         by_cat: dict[str, list[str]] = {}
@@ -839,14 +392,117 @@ def format_status(engine: GameEngine, lang: str = "en") -> str:
             for fid in fact_ids:
                 info = fact_descs.get(fid, {})
                 text = info.get(lang, info.get("en", fid.replace("_", " ")))
+                text = _corrupt_fact(text, san_level, lang)
                 html_parts.append(f'<div class="sp-fact">{text}</div>')
+
+        if san_level == "madness":
+            false_pool = FALSE_MEMORIES.get(lang, FALSE_MEMORIES["en"])
+            n_false = min(2, len(false_pool))
+            for fm in random.sample(false_pool, n_false):
+                html_parts.append(f'<div class="sp-fact" style="color:#a855f7;">{fm}</div>')
     else:
         empty = "尚无线索" if lang == "zh" else "No clues yet"
         html_parts.append(f'<div class="sp-empty">{empty}</div>')
-    html_parts.append('</div>')
+
+    # --- Unsolved Mysteries ---
+    mysteries = []
+    for fact_a, fact_b, mystery_en, mystery_zh in MYSTERY_PAIRS:
+        if fact_a in gs.discovered_facts and fact_b not in gs.discovered_facts:
+            mysteries.append(mystery_zh if lang == "zh" else mystery_en)
+
+    if mysteries:
+        mystery_header = "未解之谜" if lang == "zh" else "Unsolved"
+        html_parts.append(f'<div class="sp-cat-label" style="color:#eab308;">{mystery_header}</div>')
+        for m in mysteries[:3]:
+            html_parts.append(f'<div class="journal-mystery">{m}</div>')
 
     html_parts.append('</div>')
+    html_parts.append('</div>')
     return "".join(html_parts)
+
+
+MAP_NODES = {
+    "inn":        (120, 75),
+    "library":    (30, 75),
+    "docks":      (210, 75),
+    "church":     (120, 140),
+    "lighthouse": (210, 15),
+    "caves":      (120, 200),
+}
+MAP_EDGES = [
+    ("inn", "library"), ("inn", "docks"), ("inn", "church"),
+    ("church", "caves"), ("docks", "lighthouse"),
+]
+LOCKED_LOCATIONS = {"caves", "lighthouse"}
+
+
+def format_location_map(engine: GameEngine, lang: str = "en") -> str:
+    if not engine.game_state:
+        return ""
+    gs = engine.game_state
+    visited = gs.flags.get("_visited_locations", [])
+    if not isinstance(visited, list):
+        visited = []
+
+    svg_parts = ['<svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">']
+
+    for a, b in MAP_EDGES:
+        ax, ay = MAP_NODES[a]
+        bx, by = MAP_NODES[b]
+        svg_parts.append(
+            f'<line x1="{ax}" y1="{ay}" x2="{bx}" y2="{by}" '
+            f'stroke="#1e2a4a" stroke-width="1.5" stroke-dasharray="4 3"/>'
+        )
+
+    for loc_id, (cx, cy) in MAP_NODES.items():
+        is_current = loc_id == gs.location
+        is_visited = loc_id in visited
+        is_locked = loc_id in LOCKED_LOCATIONS and not is_visited
+
+        from src.ui.i18n import loc_name as _ln
+        label = _ln(loc_id, lang)
+
+        npc_here = [n.name for n in gs.characters.values()
+                    if n.location == loc_id and n.alive]
+
+        if is_current:
+            svg_parts.append(
+                f'<circle cx="{cx}" cy="{cy}" r="14" fill="#3b82f6" opacity="0.15"/>'
+                f'<circle cx="{cx}" cy="{cy}" r="8" fill="#3b82f6">'
+                f'<animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>'
+                f'</circle>'
+            )
+            text_cls = "current-loc"
+        elif is_locked:
+            svg_parts.append(
+                f'<circle cx="{cx}" cy="{cy}" r="7" fill="none" stroke="#374151" stroke-width="1.5" stroke-dasharray="3 2"/>'
+                f'<text x="{cx}" y="{cy+3}" text-anchor="middle" font-size="8" fill="#374151">&#x1f512;</text>'
+            )
+            text_cls = "locked-loc"
+        elif is_visited:
+            svg_parts.append(
+                f'<circle cx="{cx}" cy="{cy}" r="7" fill="#2dd4bf" opacity="0.6"/>'
+            )
+            text_cls = "visited-loc"
+        else:
+            svg_parts.append(
+                f'<circle cx="{cx}" cy="{cy}" r="7" fill="none" stroke="#4b5563" stroke-width="1.5"/>'
+            )
+            text_cls = ""
+
+        svg_parts.append(
+            f'<text x="{cx}" y="{cy - 14}" text-anchor="middle" class="{text_cls}">{label}</text>'
+        )
+
+        if npc_here and not is_locked:
+            npc_label = ", ".join(npc_here[:2])
+            svg_parts.append(
+                f'<text x="{cx}" y="{cy + 22}" text-anchor="middle" '
+                f'font-size="7" fill="#5a6785">{npc_label}</text>'
+            )
+
+    svg_parts.append('</svg>')
+    return f'<div class="loc-map-wrap">{"".join(svg_parts)}</div>'
 
 
 def format_timeline_html(engine: GameEngine) -> str:
@@ -861,7 +517,12 @@ def create_app() -> gr.Blocks:
     engine = GameEngine()
     manager = LoopManager(engine)
 
-    with gr.Blocks(title="TimeLoop: The Unspeakable Midnight", theme=THEME, css=CSS) as app:
+    with gr.Blocks(
+        title="TimeLoop: The Unspeakable Midnight",
+        theme=THEME,
+        css=CSS,
+        js=TYPEWRITER_JS,
+    ) as app:
 
         # -- Title --
         title_md = gr.Markdown(
@@ -877,7 +538,7 @@ def create_app() -> gr.Blocks:
         # -- Main layout: [sidebar | narration center] --
         with gr.Row():
 
-            # === Left sidebar: Status ===
+            # === Left sidebar: Map + Status ===
             with gr.Column(scale=1, min_width=220):
                 with gr.Row():
                     new_game_btn = gr.Button(
@@ -893,21 +554,30 @@ def create_app() -> gr.Blocks:
                         elem_classes="ctrl-btn lang-btn", size="sm",
                     )
 
+                location_map = gr.HTML(value="", elem_classes="side-panel")
+
                 status_display = gr.HTML(
                     value="",
                     elem_classes="side-panel",
                 )
 
-            # === Center: Narration + Choices + Input ===
+            # === Center: Scrolling Narration Log + Choices + Input ===
             with gr.Column(scale=3, min_width=500):
                 narration_display = gr.HTML(
-                    value=f'<div class="narration-panel san-lucid"><p><em>{t("opening_flavor", "en")}</em></p></div>',
+                    value=(
+                        f'<div class="narrative-focus">'
+                        f'<div class="nf-current">'
+                        f'<div class="nf-scene"><div class="scene-narration">'
+                        f'<p><em>{t("opening_flavor", "en")}</em></p>'
+                        f'</div></div></div></div>'
+                    ),
                 )
 
                 with gr.Column(elem_classes="action-area"):
                     choice_btn_1 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn")
                     choice_btn_2 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn")
                     choice_btn_3 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn")
+                    choice_btn_4 = gr.Button("---", interactive=False, variant="secondary", elem_classes="choice-btn knowledge-choice", visible=False)
                     with gr.Row():
                         player_input = gr.Textbox(
                             placeholder=t("input_placeholder", "en"),
@@ -928,7 +598,7 @@ def create_app() -> gr.Blocks:
                 elem_classes="timeline-wrap",
             )
 
-        # -- Debug accordion (hidden by default, triple-click title to reveal) --
+        # -- Debug accordion --
         with gr.Accordion(t("debug_panel", "en"), open=False, visible=False, elem_classes="debug-accordion") as debug_accordion:
             with gr.Row():
                 debug_intent = gr.Textbox(label=t("debug_intent", "en"), interactive=False)
@@ -944,26 +614,28 @@ def create_app() -> gr.Blocks:
         # -- State --
         choice_state = gr.State(value=[])
         lang_state = gr.State(value="en")
+        narrative_history = gr.State(value=[])
 
         # -- Handlers --
-        def on_new_game(lang):
+        def on_new_game(lang, history):
             engine.lang = lang
             result = manager.start_new_game()
-            return _update_ui(result, engine, lang)
+            return _update_ui(result, engine, lang, history=[], is_new_game=True)
 
-        def on_restart_loop(lang):
+        def on_restart_loop(lang, history):
             engine.lang = lang
             result = manager.force_restart_loop()
-            return _update_ui(result, engine, lang)
+            return _update_ui(result, engine, lang, history=history)
 
-        def on_submit(text, choices_data, lang):
+        def on_submit(text, choices_data, lang, history):
             if not text.strip():
                 return _no_change()
             engine.lang = lang
             result = manager.handle_input(text.strip(), choice_sanity_cost=0)
-            return _update_ui(result, engine, lang)
+            result.player_input = text.strip()
+            return _update_ui(result, engine, lang, history=history)
 
-        def on_choice_click(idx, choices_data, lang):
+        def on_choice_click(idx, choices_data, lang, history):
             if not choices_data or idx >= len(choices_data):
                 return _no_change()
             choice = choices_data[idx]
@@ -976,7 +648,8 @@ def create_app() -> gr.Blocks:
                 text, choice_sanity_cost=san_cost, choice_id=choice_id,
                 trust_bonus=trust_bonus,
             )
-            return _update_ui(result, engine, lang)
+            result.player_input = text
+            return _update_ui(result, engine, lang, history=history)
 
         def on_lang_toggle(current_lang):
             new_lang = "zh" if current_lang == "en" else "en"
@@ -995,10 +668,12 @@ def create_app() -> gr.Blocks:
 
             if engine.game_state:
                 updates.append(format_info_bar(engine, new_lang))
+                updates.append(format_location_map(engine, new_lang))
                 updates.append(format_status(engine, new_lang))
                 updates.append(format_timeline_html(engine))
             else:
                 updates.append(f'<div class="info-bar"><span>{t("press_new_game", new_lang)}</span></div>')
+                updates.append("")
                 updates.append("")
                 updates.append(f'<div class="tl-track" style="justify-content:center;"><span style="color:#4b5563;font-size:12px;">{t("timeline_empty", new_lang)}</span></div>')
 
@@ -1007,33 +682,38 @@ def create_app() -> gr.Blocks:
         game_outputs = [
             info_bar,
             narration_display,
+            location_map,
             status_display,
             event_timeline_display,
             choice_btn_1,
             choice_btn_2,
             choice_btn_3,
+            choice_btn_4,
             player_input,
             debug_intent,
             debug_sanity_delta,
             debug_consistency,
             debug_state_json,
             choice_state,
+            narrative_history,
         ]
 
-        new_game_btn.click(on_new_game, inputs=[lang_state], outputs=game_outputs)
-        restart_loop_btn.click(on_restart_loop, inputs=[lang_state], outputs=game_outputs)
-        submit_btn.click(on_submit, inputs=[player_input, choice_state, lang_state], outputs=game_outputs)
-        player_input.submit(on_submit, inputs=[player_input, choice_state, lang_state], outputs=game_outputs)
+        game_inputs_base = [lang_state, narrative_history]
+
+        new_game_btn.click(on_new_game, inputs=game_inputs_base, outputs=game_outputs)
+        restart_loop_btn.click(on_restart_loop, inputs=game_inputs_base, outputs=game_outputs)
+        submit_btn.click(on_submit, inputs=[player_input, choice_state, lang_state, narrative_history], outputs=game_outputs)
+        player_input.submit(on_submit, inputs=[player_input, choice_state, lang_state, narrative_history], outputs=game_outputs)
 
         def make_choice_handler(idx):
-            def handler(choices_data, lang):
-                return on_choice_click(idx, choices_data, lang)
+            def handler(choices_data, lang, history):
+                return on_choice_click(idx, choices_data, lang, history)
             return handler
 
-        for i, btn in enumerate([choice_btn_1, choice_btn_2, choice_btn_3]):
+        for i, btn in enumerate([choice_btn_1, choice_btn_2, choice_btn_3, choice_btn_4]):
             btn.click(
                 make_choice_handler(i),
-                inputs=[choice_state, lang_state],
+                inputs=[choice_state, lang_state, narrative_history],
                 outputs=game_outputs,
             )
 
@@ -1058,6 +738,7 @@ def create_app() -> gr.Blocks:
             submit_btn,
             player_input,
             info_bar,
+            location_map,
             status_display,
             event_timeline_display,
         ]
@@ -1070,13 +751,25 @@ def create_app() -> gr.Blocks:
 # UI update helpers
 # =====================================================================
 
-def _format_choice_label(choice: dict, lang: str) -> str:
+def _format_choice_label(choice: dict, lang: str, idx: int = 0, is_knowledge: bool = False) -> str:
+    """Plain-text label for Gradio Button (no HTML — buttons don't render it)."""
     text = choice.get("text", "...")
     cost = int(choice.get("sanity_cost", 0))
+
+    parts = []
+    if is_knowledge:
+        tag = "〔前世记忆〕" if lang == "zh" else "〔PAST LIFE〕"
+        parts.append(tag + " ")
+    parts.append(text)
     if cost < 0:
-        tag = f"[{'理智' if lang == 'zh' else 'SAN'} {cost}]"
-        return f"{text}  {tag}"
-    return text
+        san_label = "理智" if lang == "zh" else "SAN"
+        parts.append(f"  [{san_label} {cost}]")
+
+    hint = choice.get("hint", "")
+    if hint:
+        parts.append(f"  — {hint}")
+
+    return "".join(parts)
 
 
 def _md_to_html(md: str) -> str:
@@ -1101,53 +794,259 @@ def _md_to_html(md: str) -> str:
     return '\n'.join(parts)
 
 
-def _update_ui(result: TurnResult, engine: GameEngine, lang: str = "en"):
-    san_level = engine.game_state.sanity_level if engine.game_state else "lucid"
-    narration_md = format_narration(result, lang, sanity_level=san_level)
-    if result.is_ending:
-        icon = "---" if result.ending_id in ("sinking_into_the_deep", "sanity_break") else "***"
-        title = result.ending_id.replace("_", " ").title()
-        narration_md += f"\n\n{icon}\n\n## {title}\n\n{result.ending_text}"
+def _build_narrative_entry(result: TurnResult, lang: str, san_level: str) -> list[str]:
+    """Build structured HTML entries for the focus-based narrative display."""
+    entries: list[str] = []
 
-    bg_cls = ""
-    bg_style = ""
+    if result.player_input:
+        entries.append(
+            f'<div class="nf-player-echo">&gt; {result.player_input}</div>'
+        )
+
+    for kh in getattr(result, 'knowledge_used', []):
+        if kh.get("correct_target"):
+            tag = "前世记忆触发" if lang == "zh" else "MEMORY TRIGGERED"
+            entries.append(f'<div class="nf-knowledge-hit"><span>[{tag}]</span></div>')
+        else:
+            tag = "记忆错位" if lang == "zh" else "WRONG TARGET"
+            entries.append(f'<div class="nf-knowledge-fail"><span>[{tag}]</span></div>')
+
+    scene_parts: list[str] = []
+
+    if result.event_triggered:
+        scene_parts.append(
+            f'<div class="scene-event-title">{result.event_triggered}</div>'
+        )
+
+    if result.narration:
+        scene_parts.append(
+            f'<div class="scene-narration">{_md_to_html(result.narration)}</div>'
+        )
+
+    if result.dialogue_speaker and result.dialogue_text:
+        speaker_lower = (result.dialogue_speaker or "").lower()
+        npc_color = "#7eb8da"
+        for npc_key, color in NPC_COLORS.items():
+            if npc_key in speaker_lower:
+                npc_color = color
+                break
+        scene_parts.append(
+            f'<div class="scene-dialogue" style="--npc-color:{npc_color};">'
+            f'<div class="scene-speaker">{result.dialogue_speaker}</div>'
+            f'<div class="scene-text">&ldquo;{result.dialogue_text}&rdquo;</div>'
+            f'</div>'
+        )
+
+    delta = result.sanity_delta
+    if delta and delta != 0:
+        flavor = SANITY_FLAVOR.get(san_level, SANITY_FLAVOR["lucid"])
+        text = flavor.get(lang, flavor["en"])
+        san_label = "理智" if lang == "zh" else "SAN"
+        scene_parts.append(
+            f'<div class="scene-san-flavor">{text} ({san_label} {delta:+d})</div>'
+        )
+
+    if result.is_ending:
+        title = result.ending_id.replace("_", " ").title()
+        scene_parts.append(
+            f'<div class="scene-ending">'
+            f'<div class="scene-ending-title">{title}</div>'
+            f'<div class="scene-ending-text">{_md_to_html(result.ending_text or "")}</div>'
+            f'</div>'
+        )
+
     if result.event_image:
-        bg_cls = " has-bg"
         img_url = f"/file=data/images/events/{result.event_image}"
-        bg_style = f' style="background-image: url({img_url});"'
-    narration_html = f'<div class="narration-panel san-{san_level}{bg_cls}"{bg_style}>{_md_to_html(narration_md)}</div>'
+        scene_parts.insert(0, f'<img class="scene-cg" src="{img_url}" alt="" />')
+
+    entries.append(f'<div class="nf-scene">{"".join(scene_parts)}</div>')
+
+    return entries
+
+
+def _build_mobius_html(loop_num: int, lang: str, narration: str = "") -> str:
+    """Full Möbius strip overlay HTML for loop-reset scenes."""
+    title = "时间循环" if lang == "zh" else "TIME LOOP"
+    sub = f"第 {loop_num} 次循环" if lang == "zh" else f"LOOP #{loop_num}"
+
+    particles = "".join(
+        f'<div class="mobius-particle p{i}"></div>' for i in range(1, 9)
+    )
+    narration_html = ""
+    if narration:
+        narration_html = f'<div class="mobius-narration">{_md_to_html(narration)}</div>'
+
+    return (
+        f'<div class="nf-scene loop-reset">'
+        f'<div class="mobius-overlay">'
+        f'<div class="mobius-particles">{particles}</div>'
+        f'<div class="mobius-container">'
+        f'<svg class="mobius-svg" viewBox="0 0 220 120">'
+        f'<path d="M30,60 C30,20 80,20 110,60 C140,100 190,100 190,60 '
+        f'C190,20 140,20 110,60 C80,100 30,100 30,60 Z" '
+        f'fill="none" stroke="rgba(99,102,241,0.15)" stroke-width="12"/>'
+        f'<path d="M30,60 C30,20 80,20 110,60 C140,100 190,100 190,60 '
+        f'C190,20 140,20 110,60 C80,100 30,100 30,60 Z" '
+        f'fill="none" stroke="#6366f1" stroke-width="2.5" opacity="0.6"/>'
+        f'<path class="mobius-flow" '
+        f'd="M30,60 C30,20 80,20 110,60 C140,100 190,100 190,60 '
+        f'C190,20 140,20 110,60 C80,100 30,100 30,60 Z" '
+        f'fill="none" stroke="#a78bfa" stroke-width="2" '
+        f'stroke-dasharray="12 60" stroke-linecap="round"/>'
+        f'</svg>'
+        f'</div>'
+        f'<div class="mobius-title">{title}</div>'
+        f'<div class="mobius-loop-num">{sub}</div>'
+        f'{narration_html}'
+        f'</div>'
+        f'</div>'
+    )
+
+
+def _update_ui(
+    result: TurnResult,
+    engine: GameEngine,
+    lang: str = "en",
+    history: list | None = None,
+    is_new_game: bool = False,
+):
+    if history is None:
+        history = []
+
+    san_level = engine.game_state.sanity_level if engine.game_state else "lucid"
+
+    if is_new_game:
+        history = []
+
+    if result.is_loop_reset:
+        gs = engine.game_state
+        loop_num = gs.loop_count if gs else 1
+        divider_text = f"循环 #{loop_num}" if lang == "zh" else f"Loop #{loop_num}"
+        history.append(
+            f'<div class="nl-loop-divider">&#8734; {divider_text} &#8734;</div>'
+        )
+
+    if result.is_loop_reset:
+        gs = engine.game_state
+        loop_num = gs.loop_count if gs else 1
+        new_entries = [_build_mobius_html(loop_num, lang, result.narration)]
+    else:
+        new_entries = _build_narrative_entry(result, lang, san_level)
+    past_count = len(history)
+    history.extend(new_entries)
+
+    # --- Build two-zone HTML: collapsed history + prominent current scene ---
+    past_html = ""
+    if past_count > 0:
+        n_scenes = sum(1 for h in history[:past_count] if 'nf-scene' in h)
+        if n_scenes > 0:
+            toggle_text = f"过去 {n_scenes} 幕" if lang == "zh" else f"Past {n_scenes} scenes"
+            past_items = "".join(history[:past_count])
+            past_html = (
+                f'<div class="nf-history-toggle">'
+                f'<span class="nf-toggle-icon">&#9662;</span> {toggle_text}'
+                f'</div>'
+                f'<div class="nf-history">{past_items}</div>'
+            )
+
+    current_html = "".join(history[past_count:])
+
+    full_log = (
+        f'<div class="narrative-focus san-{san_level}">'
+        f'{past_html}'
+        f'<div class="nf-current">{current_html}</div>'
+        f'</div>'
+    )
 
     info_html = format_info_bar(engine, lang)
+    loc_map = format_location_map(engine, lang)
     status = format_status(engine, lang)
     timeline = format_timeline_html(engine)
 
-    choices = result.choices or []
-    btn_labels = [_format_choice_label(choices[i], lang) if i < len(choices) else "---" for i in range(3)]
-    btn_interactive = [i < len(choices) for i in range(3)]
+    choices = list(result.choices or [])
+
+    knowledge_choice = None
+    if engine.loop_memory.total_loops > 0 and engine.game_state:
+        unused = engine.loop_memory.unused_knowledge
+        npcs_here = [
+            npc_id for npc_id, npc in engine.game_state.characters.items()
+            if npc.location == engine.game_state.location and npc.alive
+        ]
+        for key in unused:
+            if key.target_npc in npcs_here:
+                hint_text = key.hint_zh if lang == "zh" else key.hint_en
+                knowledge_choice = {
+                    "id": f"knowledge_{key.id}",
+                    "text": hint_text,
+                    "sanity_cost": 0,
+                    "is_knowledge": True,
+                }
+                break
+
+    btn_labels = []
+    btn_interactive = []
+    for i in range(3):
+        if i < len(choices):
+            lbl = _format_choice_label(choices[i], lang, idx=i)
+            btn_labels.append(lbl)
+            btn_interactive.append(True)
+        else:
+            btn_labels.append("---")
+            btn_interactive.append(False)
+
+    fx = SANITY_EFFECTS.get(san_level, SANITY_EFFECTS["lucid"])
+    swap_chance = fx["choice_swap"]
+    if swap_chance > 0 and sum(1 for b in btn_interactive if b) >= 2:
+        active_idx = [i for i, b in enumerate(btn_interactive) if b]
+        if san_level == "madness":
+            random.shuffle(active_idx)
+            shuffled = [btn_labels[i] for i in active_idx]
+            for k, i in enumerate(active_idx):
+                btn_labels[i] = shuffled[k]
+        elif random.random() < swap_chance and len(active_idx) >= 2:
+            a, b = random.sample(active_idx, 2)
+            btn_labels[a], btn_labels[b] = btn_labels[b], btn_labels[a]
+
+    has_k_choice = knowledge_choice is not None
+    if has_k_choice:
+        choices.append(knowledge_choice)
+
+    k_label = _format_choice_label(knowledge_choice, lang, is_knowledge=True) if has_k_choice else "---"
+
+    cost0 = int(choices[0].get("sanity_cost", 0)) if len(choices) > 0 else 0
+    cost1 = int(choices[1].get("sanity_cost", 0)) if len(choices) > 1 else 0
+    cost2 = int(choices[2].get("sanity_cost", 0)) if len(choices) > 2 else 0
+
+    cls0 = "choice-btn" + (" high-cost" if cost0 < -10 else "")
+    cls1 = "choice-btn" + (" high-cost" if cost1 < -10 else "")
+    cls2 = "choice-btn" + (" high-cost" if cost2 < -10 else "")
 
     state_data = engine.get_state_summary()
 
     return (
         info_html,
-        narration_html,
+        full_log,
+        loc_map,
         status,
         timeline,
-        gr.update(value=btn_labels[0], interactive=btn_interactive[0]),
-        gr.update(value=btn_labels[1], interactive=btn_interactive[1]),
-        gr.update(value=btn_labels[2], interactive=btn_interactive[2]),
+        gr.update(value=btn_labels[0], interactive=btn_interactive[0], elem_classes=cls0),
+        gr.update(value=btn_labels[1], interactive=btn_interactive[1], elem_classes=cls1),
+        gr.update(value=btn_labels[2], interactive=btn_interactive[2], elem_classes=cls2),
+        gr.update(value=k_label, interactive=has_k_choice, visible=has_k_choice, elem_classes="choice-btn knowledge-choice"),
         gr.update(value=""),
         result.intent,
         f"{result.sanity_delta:+d}" if result.sanity_delta else "0",
         result.consistency_log or "(clean)",
         state_data,
         choices,
+        history,
     )
 
 
 def _no_change():
-    return tuple(gr.update() for _ in range(13))
+    return tuple(gr.update() for _ in range(16))
 
 
 if __name__ == "__main__":
     app = create_app()
-    app.launch(share=False)
+    app.launch(share=False, allowed_paths=["data/images/events"])

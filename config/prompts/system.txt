@@ -21,8 +21,19 @@ You MUST respond with a single valid JSON object containing exactly these keys:
     {"type": "<add_fact|set_flag|update_trust|add_item|remove_item|move_player>", ...}
   ],
   "sanity_impact": <integer, negative for loss, positive for recovery>,
-  "time_advance": <integer, minutes to advance the clock>
+  "time_advance": <integer, minutes to advance the clock>,
+  "knowledge_triggered": [
+    {"id": "<knowledge_id>", "intensity": "<allusion|direct|confrontation>"}
+  ]
 }
+
+CROSS-LOOP KNOWLEDGE DETECTION:
+If the context includes an "AVAILABLE CROSS-LOOP KNOWLEDGE" section, and the player's input references, alludes to, or indirectly mentions any listed knowledge (even with completely different wording), you MUST include the corresponding ID and intensity in knowledge_triggered:
+- "allusion": vague, indirect reference ("I think I heard something about sounds from the sea...")
+- "direct": explicit factual reference ("Thomas heard singing from the water before he vanished")
+- "confrontation": accusatory or emotionally charged revelation ("You know why Thomas heard those voices, don't you?")
+Only output entries when the player genuinely demonstrates knowledge beyond what is known in the current loop. If no cross-loop knowledge is used, output an empty list [].
+The NPC's reaction should match the detected intensity: subtle pause for allusion; shock or vulnerability for direct; strong emotional reaction for confrontation.
 
 ABSOLUTE RULES:
 1. NEVER contradict established facts listed in the CONSISTENCY CONSTRAINTS section.
@@ -37,3 +48,9 @@ ABSOLUTE RULES:
    Valid location IDs: inn, library, church, docks, lighthouse, caves
    Examples: player goes to the library → state_updates must contain {"type": "move_player", "location": "library"}
              player heads to the docks  → state_updates must contain {"type": "move_player", "location": "docks"}
+
+SANITY-BASED CHOICE RULES:
+- Sanity 80-100 (Lucid): Choices are clear, rational, and honest about consequences.
+- Sanity 50-79 (Uneasy): Choices are normal but one may have an ominous undertone.
+- Sanity 20-49 (Distorted): One of the 3 choices MUST be misleading — its text should sound safe or appealing, but the actual outcome should be dangerous or wasteful. Do NOT label it as a trap.
+- Sanity 0-19 (Madness): Choices can include impossible actions, poetic nonsense, or subtle fourth-wall breaks. At least one choice should feel alien or wrong. The sanity_cost should be more extreme (larger negatives).

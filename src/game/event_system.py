@@ -174,6 +174,20 @@ class EventSystem:
                 if lm.npc_max_trust.get(npc_id, 0) < min_trust:
                     return False
 
+        if "knowledge_combination" in trigger:
+            kc = trigger["knowledge_combination"]
+            player_facts = set(gs.discovered_facts)
+            if "all_of" in kc:
+                if not all(f in player_facts for f in kc["all_of"]):
+                    return False
+            if "any_of" in kc:
+                if not any(f in player_facts for f in kc["any_of"]):
+                    return False
+
+        if "min_used_knowledge" in trigger:
+            if len(lm.used_knowledge) < trigger["min_used_knowledge"]:
+                return False
+
         return True
 
     def get_timeline(self, game_state: GameState) -> list[dict[str, Any]]:
@@ -198,8 +212,11 @@ class EventSystem:
         """Check if an event's non-input conditions are close to being met."""
         if trigger.get("auto"):
             return True
-        if "not_flag" in trigger and gs.flags.get(trigger["not_flag"], False):
-            return False
+        if "not_flag" in trigger:
+            nf = trigger["not_flag"]
+            not_flags = nf if isinstance(nf, list) else [nf]
+            if any(gs.flags.get(f, False) for f in not_flags):
+                return False
         if "flag" in trigger and not gs.flags.get(trigger["flag"], False):
             return False
         if "location" in trigger and gs.location != trigger["location"]:
@@ -220,8 +237,11 @@ class EventSystem:
                 missing.append(f"go to {loc}" if lang == "en" else f"前往{loc}")
             if "flag" in trigger and not game_state.flags.get(trigger["flag"], False):
                 continue
-            if "not_flag" in trigger and game_state.flags.get(trigger["not_flag"], False):
-                continue
+            if "not_flag" in trigger:
+                nf = trigger["not_flag"]
+                not_flags = nf if isinstance(nf, list) else [nf]
+                if any(game_state.flags.get(f, False) for f in not_flags):
+                    continue
             if "fact_required" in trigger and trigger["fact_required"] not in game_state.discovered_facts:
                 continue
 

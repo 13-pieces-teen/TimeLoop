@@ -128,6 +128,15 @@ STRINGS: dict[str, dict[str, str]] = {
         "en": "EN",
         "zh": "中",
     },
+    # -- Journal --
+    "label_journal": {
+        "en": "Investigation Notes",
+        "zh": "调查手记",
+    },
+    "label_mysteries": {
+        "en": "Unsolved",
+        "zh": "未解之谜",
+    },
 
     # -- Event choices fallback --
     "continue": {

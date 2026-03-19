@@ -27,6 +27,7 @@ class ParsedOutput:
     state_updates: list[dict[str, Any]] = field(default_factory=list)
     sanity_impact: int = 0
     time_advance: int = 30
+    knowledge_triggered: list[dict[str, str]] = field(default_factory=list)
     raw: dict = field(default_factory=dict)
     parse_errors: list[str] = field(default_factory=list)
 
@@ -107,6 +108,25 @@ def _extract_narration_from_raw(raw_text: str) -> str:
     return ""
 
 
+_VALID_INTENSITIES = {"allusion", "direct", "confrontation"}
+
+
+def _sanitize_knowledge_triggered(raw: Any) -> list[dict[str, str]]:
+    """Normalise LLM's knowledge_triggered into a clean list of {id, intensity}."""
+    if not isinstance(raw, list):
+        return []
+    result: list[dict[str, str]] = []
+    for item in raw:
+        if isinstance(item, dict) and "id" in item:
+            intensity = item.get("intensity", "direct")
+            if intensity not in _VALID_INTENSITIES:
+                intensity = "direct"
+            result.append({"id": str(item["id"]), "intensity": intensity})
+        elif isinstance(item, str):
+            result.append({"id": item, "intensity": "direct"})
+    return result
+
+
 def parse_llm_output(raw_text: str) -> ParsedOutput:
     data = extract_json(raw_text)
     if data is None:
@@ -143,6 +163,10 @@ def parse_llm_output(raw_text: str) -> ParsedOutput:
     if dialogue is None:
         dialogue = {"speaker": None, "text": None}
 
+    knowledge_triggered = _sanitize_knowledge_triggered(
+        data.get("knowledge_triggered", [])
+    )
+
     return ParsedOutput(
         intent=data.get("intent", "UNKNOWN"),
         entities=data.get("entities", {}),
@@ -152,6 +176,7 @@ def parse_llm_output(raw_text: str) -> ParsedOutput:
         state_updates=data.get("state_updates", []),
         sanity_impact=int(data.get("sanity_impact", 0)),
         time_advance=int(data.get("time_advance", 30)),
+        knowledge_triggered=knowledge_triggered,
         raw=data,
         parse_errors=errors,
     )

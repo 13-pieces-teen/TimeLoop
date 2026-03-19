@@ -9,6 +9,7 @@ profiles:
       在此信任等级下她会分享的信息：{available_knowledge}
       她绝不能透露超过当前信任阈值的信息。
       如果被问到她隐瞒的事情，她会岔开话题、提供食物、声称自己「不清楚这些事」。
+      {sanity_behavior}
 
   morrison:
     system_injection: >
@@ -21,6 +22,7 @@ profiles:
       在此信任等级下他会分享的信息：{available_knowledge}
       他绝不能透露超过当前信任阈值的信息。
       如果被逼问，他会搬出上帝的旨意，警告「危险的好奇心」。
+      {sanity_behavior}
 
   eleanor:
     system_injection: >
@@ -33,6 +35,7 @@ profiles:
       在此信任等级下她会分享的信息：{available_knowledge}
       她绝不能透露超过当前信任阈值的信息。
       如果信任度高且提到伊莱亚斯，她会明显变得痛苦。
+      {sanity_behavior}
 
   silas:
     system_injection: >
@@ -45,3 +48,4 @@ profiles:
       当前信任等级：{trust}
       在此信任等级下他会分享的信息：{available_knowledge}
       他绝不能透露超过当前信任阈值的信息。
+      {sanity_behavior}

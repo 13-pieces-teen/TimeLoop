@@ -33,6 +33,37 @@ class NPCState:
         }
 
 
+SANITY_EFFECTS: dict[str, dict] = {
+    "lucid":    {"trust_mod": 1,  "time_warp": 1.0, "choice_swap": 0.0, "fact_corrupt": 0.0, "display_jitter": 0},
+    "uneasy":   {"trust_mod": 0,  "time_warp": 1.2, "choice_swap": 0.0, "fact_corrupt": 0.0, "display_jitter": 0},
+    "distorted": {"trust_mod": 0, "time_warp": 1.5, "choice_swap": 0.4, "fact_corrupt": 0.3, "display_jitter": 8},
+    "madness":  {"trust_mod": -1, "time_warp": 2.0, "choice_swap": 1.0, "fact_corrupt": 0.5, "display_jitter": 20},
+}
+
+_NPC_FACT_RELEVANCE: dict[str, set[str]] = {
+    "martha": {
+        "elias_stayed_at_inn", "thomas_holloway_heard_whispers",
+        "thomas_holloway_missing_six_months", "multiple_people_have_disappeared",
+        "thomas_letter_map",
+    },
+    "morrison": {
+        "ritual_happens_every_30_years", "ritual_requires_sacrifice",
+        "morrison_performed_last_ritual", "morrison_locked_elias_in_lighthouse",
+        "elias_found_alternative_method",
+    },
+    "eleanor": {
+        "eleanor_helped_elias", "elias_discovered_lens_ritual",
+        "elias_found_alternative_method", "elias_stayed_at_inn",
+        "elias_found_thirty_year_pattern",
+    },
+    "silas": {
+        "entity_sleeps_beneath_bay", "entity_is_dreaming_not_evil",
+        "silas_witnessed_the_entity", "caves_entrance_known",
+        "thomas_holloway_heard_whispers",
+    },
+}
+
+
 @dataclass
 class GameState:
     loop_count: int = 1
@@ -136,10 +167,21 @@ class GameState:
             return True
         return False
 
+    def get_trust_cap(self, npc_id: str) -> int:
+        """Dynamic trust ceiling: knowing more secrets raises the cap."""
+        base_cap = 30
+        per_fact_bonus = 10
+        relevant_facts = sum(
+            1 for f in self.discovered_facts
+            if npc_id in f or f in _NPC_FACT_RELEVANCE.get(npc_id, set())
+        )
+        return min(100, base_cap + relevant_facts * per_fact_bonus)
+
     def update_trust(self, npc_id: str, delta: int) -> None:
         if npc_id in self.characters:
             npc = self.characters[npc_id]
-            npc.trust = max(0, min(100, npc.trust + delta))
+            cap = self.get_trust_cap(npc_id)
+            npc.trust = max(0, min(cap, npc.trust + delta))
             npc.met = True
 
     def move_player(self, location: str) -> None:

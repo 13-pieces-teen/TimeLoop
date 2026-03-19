@@ -1,0 +1,181 @@
+/* -- Header -- */
+.header-row { margin-bottom: 4px !important; }
+.game-title {
+    text-align: center;
+    padding: 8px 0 2px 0;
+}
+.game-title h1 {
+    font-size: 1.8em !important;
+    color: #ccd6f6 !important;
+    letter-spacing: 2px;
+    margin-bottom: 0 !important;
+}
+.game-title p {
+    color: #5a6785 !important;
+    font-style: italic;
+    font-size: 0.95em;
+    margin-top: 2px !important;
+}
+
+/* -- Top info bar -- */
+.info-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 8px 16px;
+    background: linear-gradient(90deg, #0f1628 0%, #131829 50%, #0f1628 100%);
+    border: 1px solid #1e2a4a;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    color: #8892b0;
+    margin-bottom: 4px;
+}
+.info-bar .sanity-section { flex: 1; }
+.info-bar .meta-section { text-align: right; }
+
+/* -- Narration area -- */
+.narration-panel {
+    padding: 24px 28px !important;
+    border-left: 3px solid #1a3a5c !important;
+    background: linear-gradient(135deg, #0d1117 0%, #131829 100%) !important;
+    min-height: 180px !important;
+    font-size: 1.1em !important;
+    line-height: 1.9 !important;
+    color: #c9d1d9 !important;
+    border-radius: 8px !important;
+}
+.narration-panel p { margin-bottom: 12px !important; }
+.narration-panel strong { color: #7eb8da !important; }
+.narration-panel em { color: #a8b2d1 !important; }
+
+/* -- Narration background image overlay -- */
+.narration-panel.has-bg {
+    position: relative;
+    min-height: 280px !important;
+    background-size: cover !important;
+    background-position: center top !important;
+    background-repeat: no-repeat !important;
+}
+.narration-panel.has-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(13,17,23, 0.15) 0%,
+        rgba(13,17,23, 0.6) 40%,
+        rgba(19,24,41, 0.95) 75%,
+        rgba(19,24,41, 1) 100%
+    );
+    border-radius: inherit;
+    z-index: 0;
+    pointer-events: none;
+}
+.narration-panel.has-bg > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* -- Action area (vertical choices + input) -- */
+.action-area {
+    gap: 6px !important;
+    margin-top: 8px !important;
+}
+
+/* -- Choice buttons (vertical cards) -- */
+.choice-btn {
+    min-height: 44px !important;
+    font-size: 0.95em !important;
+    border: 1px solid #1e2a4a !important;
+    transition: all 0.2s ease !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+    padding: 10px 20px !important;
+    text-align: left !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    border-radius: 6px !important;
+}
+.choice-btn:hover {
+    border-color: #3d5a80 !important;
+    background: #1a2744 !important;
+    color: #ccd6f6 !important;
+}
+
+/* -- Input area -- */
+.input-area textarea {
+    background: #0d1117 !important;
+    border-color: #1e2a4a !important;
+    color: #c9d1d9 !important;
+    font-size: 1em !important;
+}
+.act-btn {
+    min-height: 42px !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+}
+
+/* -- Side panels -- */
+.side-panel textarea {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.8em !important;
+    line-height: 1.6 !important;
+    color: #8892b0 !important;
+    background: #0d1117 !important;
+    border-color: #1e2a4a !important;
+}
+
+/* -- Game control buttons -- */
+.ctrl-btn {
+    font-size: 0.85em !important;
+    padding: 6px 12px !important;
+}
+
+/* -- Language toggle -- */
+.lang-btn {
+    min-width: 44px !important;
+    max-width: 44px !important;
+    font-size: 0.8em !important;
+    padding: 4px 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+}
+
+/* -- Accordion -- */
+.debug-accordion {
+    border-color: #1e2a4a !important;
+    margin-top: 8px !important;
+}
+
+/* -- Debug toggle (tiny corner button) -- */
+.debug-toggle-btn {
+    position: fixed !important;
+    bottom: 8px !important;
+    right: 8px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 24px !important;
+    font-size: 9px !important;
+    opacity: 0.25 !important;
+    z-index: 999 !important;
+    padding: 0 !important;
+}
+.debug-toggle-btn:hover { opacity: 0.8 !important; }
+
+/* -- Location map (SVG node graph) -- */
+.loc-map-wrap {
+    padding: 8px;
+    background: #0d1117;
+    border: 1px solid #1e2a4a;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.loc-map-wrap svg text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: #6b7280;
+}
+.loc-map-wrap svg text.current-loc { fill: #93c5fd; font-weight: 700; }
+.loc-map-wrap svg text.visited-loc { fill: #8892b0; }
+.loc-map-wrap svg text.locked-loc { fill: #374151; }

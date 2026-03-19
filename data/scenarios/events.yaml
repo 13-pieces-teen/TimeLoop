@@ -40,7 +40,7 @@ events:
 
   - id: "martha_intro"
     act: 1
-    image: "martha_intro.png"
+    image: "martha_intro.jpg"
     title: "Meeting Martha"
     title_zh: "与玛莎初见"
     trigger:
@@ -88,7 +88,7 @@ events:
 
   - id: "mention_elias_to_martha"
     act: 1
-    image: "martha_intro.png"
+    image: "martha_intro.jpg"
     title: "Martha Recognizes Elias's Name"
     title_zh: "玛莎认出了伊莱亚斯的名字"
     trigger:
@@ -140,7 +140,7 @@ events:
 
   - id: "confront_martha_whispers"
     act: 2
-    image: "martha_husband.png"
+    image: "martha_husband.jpg"
     title: "You Already Know"
     title_zh: "你已经知道了"
     trigger:
@@ -651,7 +651,7 @@ events:
   # ===== ACT 3: REVELATIONS (Trust-gated) =====
   - id: "martha_husband"
     act: 3
-    image: "martha_husband.png"
+    image: "martha_husband.jpg"
     title: "Martha's Secret"
     title_zh: "玛莎的秘密"
     trigger:
@@ -705,7 +705,7 @@ events:
 
   - id: "martha_letter"
     act: 3
-    image: "martha_husband.png"
+    image: "martha_husband.jpg"
     title: "Thomas's Envelope"
     title_zh: "托马斯的密封信"
     trigger:
@@ -1163,11 +1163,176 @@ events:
         text_zh: "不对劲。回头。"
         sanity_cost: 0
 
+  # ===== DEEP FOREKNOWLEDGE (Loop 3+) =====
+
+  - id: "confront_morrison_eleanor_triangle"
+    act: 3
+    title: "The Truth Between Them"
+    title_zh: "他们之间的真相"
+    trigger:
+      location: "church"
+      min_loop: 3
+      knowledge_combination:
+        all_of: ["morrison_locked_elias_in_lighthouse", "eleanor_helped_elias"]
+      not_flag: "triangle_confronted"
+    narration: >
+      You know the pieces now. Morrison locked Elias in the lighthouse.
+      Eleanor gave Elias access to the forbidden texts. They were pulling
+      Elias in opposite directions, and he shattered between them. You
+      look Morrison in the eye: 'Eleanor helped Elias, and then you
+      locked him away. What really happened that night, Father?'
+      Morrison's composure cracks like old plaster. His hands tremble.
+      'She didn't understand what she was unleashing,' he whispers.
+      'I did what I had to. God forgive me — I did what I had to.'
+    narration_zh: >
+      你已经知道了拼图的碎片。莫里森把伊莱亚斯锁在了灯塔里。埃莉诺让伊莱亚斯
+      接触了禁忌文献。他们将伊莱亚斯往相反的方向拉扯，而他在两人之间粉碎。
+      你直视莫里森的眼睛：「埃莉诺帮了伊莱亚斯，然后你把他关了起来。那天晚上
+      到底发生了什么，神父？」莫里森的镇定如同旧灰泥般崩裂。他的双手颤抖。
+      「她不明白自己在释放什么，」他低语道。「我做了我必须做的。上帝原谅我——
+      我做了我必须做的。」
+    effects:
+      - {type: "set_flag", key: "triangle_confronted", value: true}
+      - {type: "update_trust", npc: "morrison", delta: 15}
+      - {type: "add_fact", fact: "morrison_guilt_revealed"}
+    sanity_impact: -5
+    choices:
+      - id: "press_morrison_harder"
+        text: "Press him — what exactly did he do to Elias?"
+        text_zh: "追问——他对伊莱亚斯究竟做了什么？"
+        sanity_cost: -5
+        trust_bonus: {morrison: 10}
+      - id: "show_compassion"
+        text: "Tell him you understand the burden of impossible choices"
+        text_zh: "告诉他你理解不可能抉择的重担"
+        sanity_cost: 0
+        trust_bonus: {morrison: 20}
+
+  - id: "eleanor_full_picture"
+    act: 3
+    title: "Eleanor's Complete Truth"
+    title_zh: "埃莉诺的完整真相"
+    trigger:
+      location: "library"
+      min_loop: 3
+      knowledge_combination:
+        all_of: ["eleanor_helped_elias", "elias_discovered_lens_ritual", "ritual_requires_sacrifice"]
+      not_flag: "eleanor_full_truth"
+    narration: >
+      You lay out everything: the lens, the sacrifice, Elias's alternative.
+      Eleanor's face cycles through shock, grief, and finally a terrible
+      resolve. 'You know everything,' she says flatly. 'You know things
+      I haven't told a living soul. How?' She searches your face. 'It
+      doesn't matter. If you truly understand what the lens can do, then
+      you understand the cost. Elias was willing to pay it. Are you?'
+    narration_zh: >
+      你把一切摊开：透镜、祭品、伊莱亚斯的替代方案。埃莉诺的表情在震惊、悲痛
+      和一种可怕的决心之间轮转。「你什么都知道了，」她平静地说。「你知道我从未
+      告诉过任何活人的事。怎么做到的？」她审视着你的脸。「无所谓了。如果你真的
+      理解透镜能做什么，那你就理解代价。伊莱亚斯愿意付出。你呢？」
+    effects:
+      - {type: "set_flag", key: "eleanor_full_truth", value: true}
+      - {type: "update_trust", npc: "eleanor", delta: 25}
+    sanity_impact: -5
+    choices:
+      - id: "accept_cost"
+        text: "Whatever it takes to break the cycle"
+        text_zh: "不惜一切代价打破循环"
+        sanity_cost: -10
+        trust_bonus: {eleanor: 15}
+      - id: "ask_about_cost"
+        text: "What exactly is the cost?"
+        text_zh: "代价到底是什么？"
+        sanity_cost: 0
+        trust_bonus: {eleanor: 5}
+
+  - id: "silas_time_awareness"
+    act: 3
+    title: "Silas Knows About the Loops"
+    title_zh: "西拉斯知道循环的事"
+    trigger:
+      location: "docks"
+      min_loop: 3
+      knowledge_combination:
+        all_of: ["entity_is_dreaming_not_evil", "silas_witnessed_the_entity"]
+      loop_memory_npc_trust: {silas: 40}
+      not_flag: "silas_loop_aware"
+    narration: >
+      Silas is staring at you before you even speak. 'You've been here
+      before,' he says. Not a question. 'More than twice. I can see it
+      in the way you walk — like someone following footprints they've
+      already made.' He pulls a weathered flask from his coat and takes
+      a long drink. 'The dreamer feels it too. Each time you come back,
+      the water gets warmer. It's waking up, friend. Slowly, but it is.'
+    narration_zh: >
+      你还没开口，西拉斯就在盯着你看。「你来过不止一次了，」他说。不是疑问。
+      「不止两次。我从你走路的样子就能看出来——就像一个人沿着自己已经留下的
+      脚印走。」他从外套里掏出一只旧酒壶，长饮一口。「沉睡者也感觉到了。
+      你每回来一次，水就变暖一点。它在醒来，朋友。慢慢地，但确实在醒。」
+    effects:
+      - {type: "set_flag", key: "silas_loop_aware", value: true}
+      - {type: "update_trust", npc: "silas", delta: 20}
+      - {type: "add_fact", fact: "entity_responding_to_loops"}
+    sanity_impact: -10
+    choices:
+      - id: "ask_how_to_stop"
+        text: "How do we stop it from fully waking?"
+        text_zh: "我们怎么阻止它完全苏醒？"
+        sanity_cost: 0
+        trust_bonus: {silas: 10}
+      - id: "ask_what_it_wants"
+        text: "What does the dreamer want?"
+        text_zh: "沉睡者想要什么？"
+        sanity_cost: -5
+        trust_bonus: {silas: 15}
+
+  - id: "martha_deep_confession"
+    act: 3
+    title: "Martha's Deepest Secret"
+    title_zh: "玛莎最深的秘密"
+    trigger:
+      location: "inn"
+      min_loop: 3
+      knowledge_combination:
+        all_of: ["thomas_holloway_heard_whispers", "thomas_holloway_missing_six_months"]
+      npc_trust: {martha: 60}
+      not_flag: "martha_deep_secret"
+    narration: >
+      You mention Thomas one more time, and something in Martha finally
+      breaks. Not dramatically — quietly, like a dam that's been
+      crumbling for months. 'I hear them too,' she whispers. 'The whispers.
+      I've heard them since Thomas left. At first I thought it was grief.
+      But they say things, in a language I don't know but somehow
+      understand.' She presses her hand against the bar. 'They say Thomas
+      isn't dead. They say he's... singing.'
+    narration_zh: >
+      你又一次提到了托马斯，而玛莎心中的某道防线终于崩塌了。不是戏剧性的崩溃——
+      而是安静地，像一座崩塌了数月的堤坝。「我也听到了，」她低语道。「低语。
+      自从托马斯走后我就一直听到。起初我以为那是悲伤。但它们在说话，用一种
+      我不认识却莫名能理解的语言。」她把手按在吧台上。「它们说托马斯没有死。
+      它们说他在……唱歌。」
+    effects:
+      - {type: "set_flag", key: "martha_deep_secret", value: true}
+      - {type: "update_trust", npc: "martha", delta: 20}
+      - {type: "add_fact", fact: "martha_hears_whispers_too"}
+    sanity_impact: -5
+    choices:
+      - id: "comfort_martha"
+        text: "Hold her hand. Tell her Thomas can still be saved."
+        text_zh: "握住她的手。告诉她托马斯还能得救。"
+        sanity_cost: 0
+        trust_bonus: {martha: 15}
+      - id: "ask_what_whispers_say"
+        text: "What exactly are the whispers saying?"
+        text_zh: "低语到底在说什么？"
+        sanity_cost: -10
+        trust_bonus: {martha: 5}
+
   # ===== MIDNIGHT =====
   - id: "midnight_approaches"
     act: 0
     time_cost: 0
-    image: "midnight_approaches.png"
+    image: "midnight_approaches.jpg"
     title: "The Bells Begin"
     title_zh: "钟声将至"
     trigger:

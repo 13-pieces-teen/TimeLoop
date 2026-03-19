@@ -20,19 +20,30 @@ class SoftChecker:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         self.model_name = model_name
         self._model = None
+        self._load_model()
 
     def _load_model(self):
-        if self._model is None:
-            try:
-                from sentence_transformers import SentenceTransformer
-                logger.info("Loading sentence-transformers model: %s", self.model_name)
-                self._model = SentenceTransformer(self.model_name)
-                logger.info("Model loaded successfully")
-            except ImportError:
-                logger.warning(
-                    "sentence-transformers not installed, soft checking disabled"
-                )
-                self._model = "unavailable"
+        if self._model is not None:
+            return
+        try:
+            import os
+            os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+
+            from sentence_transformers import SentenceTransformer
+            logger.info("Loading sentence-transformers model: %s", self.model_name)
+            self._model = SentenceTransformer(self.model_name)
+            logger.info("Model loaded successfully")
+        except ImportError:
+            logger.warning(
+                "sentence-transformers not installed, soft checking disabled"
+            )
+            self._model = "unavailable"
+        except Exception as e:
+            logger.warning(
+                "Failed to load sentence-transformers model: %s. "
+                "Soft checking disabled for this session.", e
+            )
+            self._model = "unavailable"
 
     def check(
         self,

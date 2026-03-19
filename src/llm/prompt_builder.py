@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -9,9 +10,23 @@ from src.state.game_state import GameState
 from src.state.loop_memory import LoopMemory
 from src.state.sanity import SanitySystem
 
+logger = logging.getLogger(__name__)
+
 
 class PromptBuilder:
-    """Assembles the multi-layer prompt for each game turn."""
+    """Tiered prompt assembly: static system | dynamic context | player action.
+
+    Tier 1 — Static System  (system message, stable across turns → prefix-cacheable)
+        Role instructions, output format, world background facts.
+
+    Tier 2 — Dynamic Context (prepended to user message, priority-sorted)
+        P1 (critical):  sanity style, location, NPC profiles
+        P2 (important): world state, consistency facts, loop memory
+        P3 (nice-to-have): recent turn history
+
+    Tier 3 — Turn Payload   (appended to user message)
+        Narrative hints, knowledge-usage flags, player action text.
+    """
 
     def __init__(self, config_dir: str | Path):
         config_dir = Path(config_dir)
@@ -43,9 +58,51 @@ class PromptBuilder:
         self.world_data = _yaml(Path("data") / "scenarios" / "world.yaml")
         self.npcs_full_data = _yaml(Path("data") / "scenarios" / "npcs.yaml").get("npcs", {})
 
+    NPC_SANITY_BEHAVIOR = {
+        "en": {
+            "lucid": "",
+            "uneasy": (
+                "SANITY EFFECT: The player seems uneasy. Occasionally pause mid-sentence "
+                "as if you heard something, or briefly lose your train of thought."
+            ),
+            "distorted": (
+                "SANITY EFFECT — UNRELIABLE NPC: You MUST slip one subtle falsehood into "
+                "this conversation — a wrong name, a wrong date, an event that never happened, "
+                "or a person who doesn't exist. Do NOT mark which part is false. The player "
+                "should not be able to tell."
+            ),
+            "madness": (
+                "SANITY EFFECT — DEEPLY UNRELIABLE NPC: At least half of what you say should "
+                "be fabricated, contradictory, or nonsensical. You may speak in riddles, quote "
+                "things no one said, or describe memories that belong to someone else. The "
+                "boundary between your voice and the narrator's voice is dissolving."
+            ),
+        },
+        "zh": {
+            "lucid": "",
+            "uneasy": (
+                "理智效果：玩家看起来不安。偶尔在说话时停顿，仿佛听到了什么，"
+                "或者短暂地忘记自己在说什么。"
+            ),
+            "distorted": (
+                "理智效果——不可靠的NPC：你必须在这次对话中混入一个细微的虚假细节——"
+                "搞错名字、日期、编造一个不存在的事件或人物。不要标注哪部分是假的。"
+                "玩家应该无法分辨真伪。"
+            ),
+            "madness": (
+                "理智效果——严重不可靠的NPC：你说的话中至少一半应该是编造的、矛盾的或荒谬的。"
+                "你可以说谜语、引用没人说过的话、描述属于别人的记忆。"
+                "你的声音与叙述者的声音之间的界限正在溶解。"
+            ),
+        },
+    }
+
     def _get_npc_injection(self, game_state: GameState, lang: str = "en") -> str:
         location = game_state.location
         profiles = self.npc_profiles.get(lang, self.npc_profiles["en"])
+        san_level = game_state.sanity_level
+        san_behavior = self.NPC_SANITY_BEHAVIOR.get(lang, self.NPC_SANITY_BEHAVIOR["en"]).get(san_level, "")
+
         injections = []
         for npc_id, npc in game_state.characters.items():
             if npc.location != location or not npc.alive:
@@ -60,6 +117,9 @@ class PromptBuilder:
             text = profile["system_injection"]
             text = text.replace("{trust}", str(npc.trust))
             text = text.replace("{available_knowledge}", available_knowledge)
+            text = text.replace("{sanity_behavior}", san_behavior)
+            if san_behavior and "{sanity_behavior}" not in profile["system_injection"]:
+                text = text.rstrip() + "\n" + san_behavior
             injections.append(text)
 
         return "\n\n".join(injections)
@@ -126,11 +186,13 @@ class PromptBuilder:
     def _get_turn_history_summary(self, game_state: GameState, lang: str = "en") -> str:
         if not game_state.turn_history:
             return "本轮循环暂无先前行动。" if lang == "zh" else "No previous actions this loop."
+        recent = game_state.turn_history[-3:]
+        offset = len(game_state.turn_history) - len(recent)
         lines = []
-        for i, turn in enumerate(game_state.turn_history):
+        for i, turn in enumerate(recent):
             player_action = turn.get("player_input", "?")
-            narration_snippet = turn.get("narration", "")[:100]
-            lines.append(f"Turn {i + 1}: Player: \"{player_action}\" -> {narration_snippet}...")
+            narration_snippet = turn.get("narration", "")[:80]
+            lines.append(f"T{offset + i + 1}: \"{player_action}\" -> {narration_snippet}...")
         header = "近期历史：" if lang == "zh" else "RECENT HISTORY:"
         return header + "\n" + "\n".join(lines)
 
@@ -153,44 +215,105 @@ class PromptBuilder:
             "- The player is a folklore lecturer from Boston University.",
         ]
 
+    # ------------------------------------------------------------------
+    # Tier 1 — Static system prompt (stable across turns)
+    # ------------------------------------------------------------------
+
+    def build_static_system(self, lang: str = "en") -> str:
+        """Instructions + world background. Unchanged between turns → prefix-cacheable."""
+        base = self.system_base.get(lang, self.system_base["en"])
+        return "\n".join([base, "", *self._get_world_background(lang)])
+
+    # ------------------------------------------------------------------
+    # Tier 2 — Dynamic context (priority-sorted, budget-aware)
+    # ------------------------------------------------------------------
+
+    def build_turn_context(
+        self,
+        game_state: GameState,
+        loop_memory: LoopMemory,
+        lang: str = "en",
+        max_tokens: int = 1800,
+    ) -> str:
+        """Assemble per-turn context sorted by priority.
+
+        Sections are added in priority order; if *max_tokens* (rough estimate)
+        would be exceeded, lower-priority sections are dropped and logged.
+        """
+        sec = lambda zh, en: zh if lang == "zh" else en
+        sanity_sys = self.sanity_system.get(lang, self.sanity_system["en"])
+
+        npc_text = (
+            self._get_npc_injection(game_state, lang)
+            or sec("（此地点无NPC）", "(No NPCs at this location)")
+        )
+
+        sections: list[tuple[int, str, str]] = [
+            (1, sec("理智风格", "SANITY STYLE"),     sanity_sys.get_directive(game_state.sanity)),
+            (1, sec("当前位置", "LOCATION"),          self._get_location_context(game_state, lang)),
+            (1, sec("NPC 档案", "NPC PROFILES"),      npc_text),
+            (2, sec("世界状态", "WORLD STATE"),        game_state.to_prompt_summary()),
+            (2, sec("一致性约束", "CONSISTENCY"),       self._get_consistency_constraints(game_state, lang)),
+            (2, sec("循环记忆", "LOOP MEMORY"),        loop_memory.to_prompt_summary()),
+            (3, sec("回合历史", "TURN HISTORY"),        self._get_turn_history_summary(game_state, lang)),
+        ]
+
+        sections.sort(key=lambda s: s[0])
+
+        included: list[str] = []
+        est_tokens = 0
+        for prio, label, content in sections:
+            cost = self._estimate_tokens(content)
+            if est_tokens + cost > max_tokens:
+                logger.debug(
+                    "Prompt budget reached (%d/%d); dropping [P%d] %s (%d tok)",
+                    est_tokens, max_tokens, prio, label, cost,
+                )
+                continue
+            included.append(f"--- {label} ---\n{content}")
+            est_tokens += cost
+
+        return "\n\n".join(included)
+
+    # ------------------------------------------------------------------
+    # Tier 3 — User message (context + extras + player action)
+    # ------------------------------------------------------------------
+
+    def build_user_message(
+        self,
+        player_input: str,
+        game_state: GameState | None = None,
+        loop_memory: LoopMemory | None = None,
+        lang: str = "en",
+        extra_context: str = "",
+    ) -> str:
+        """Combine dynamic context, extra hints, and player action."""
+        parts: list[str] = []
+        if game_state and loop_memory:
+            parts.append(self.build_turn_context(game_state, loop_memory, lang))
+        if extra_context:
+            parts.append(extra_context)
+        parts.append(f"Player action: {player_input}")
+        return "\n\n".join(parts)
+
+    # ------------------------------------------------------------------
+    # Backward-compatible helpers
+    # ------------------------------------------------------------------
+
     def build_system_prompt(
         self, game_state: GameState, loop_memory: LoopMemory, lang: str = "en",
     ) -> str:
-        system_base = self.system_base.get(lang, self.system_base["en"])
-        sanity_sys = self.sanity_system.get(lang, self.sanity_system["en"])
+        """Legacy API — returns static system + dynamic context combined."""
+        return (
+            self.build_static_system(lang)
+            + "\n\n"
+            + self.build_turn_context(game_state, loop_memory, lang)
+        )
 
-        sec = lambda zh, en: zh if lang == "zh" else en
-
-        parts = [
-            system_base,
-            "",
-            *self._get_world_background(lang),
-            "",
-            f"--- {sec('理智风格', 'SANITY STYLE')} ---",
-            sanity_sys.get_directive(game_state.sanity),
-            "",
-            f"--- {sec('当前位置', 'LOCATION')} ---",
-            self._get_location_context(game_state, lang),
-            "",
-            f"--- {sec('NPC 档案', 'NPC PROFILES')} ---",
-            self._get_npc_injection(game_state, lang) or sec("（此地点无NPC）", "(No NPCs at this location)"),
-            "",
-            f"--- {sec('世界状态', 'WORLD STATE')} ---",
-            game_state.to_prompt_summary(),
-            "",
-            f"--- {sec('循环记忆', 'LOOP MEMORY')} ---",
-            loop_memory.to_prompt_summary(),
-            "",
-            f"--- {sec('一致性约束', 'CONSISTENCY CONSTRAINTS')} ---",
-            self._get_consistency_constraints(game_state, lang),
-            "",
-            f"--- {sec('回合历史', 'TURN HISTORY')} ---",
-            self._get_turn_history_summary(game_state, lang),
-        ]
-        return "\n".join(parts)
-
-    def build_user_message(self, player_input: str) -> str:
-        return f"Player action: {player_input}"
+    @staticmethod
+    def _estimate_tokens(text: str) -> int:
+        """Rough token estimate (works for mixed en/zh)."""
+        return max(1, len(text) // 3)
 
     def _build_loop_recap(self, loop_memory: LoopMemory, lang: str = "en") -> str:
         """Build a recap block for loops > 0 to inject deja vu flavor."""
@@ -243,21 +366,24 @@ class PromptBuilder:
     def build_opening_prompt(
         self, game_state: GameState, loop_memory: LoopMemory, lang: str = "en",
     ) -> tuple[str, str]:
-        """Build the prompt for the very first turn of a loop."""
-        system = self.build_system_prompt(game_state, loop_memory, lang=lang)
+        """Build the prompt for the very first turn of a loop.
 
+        Returns (system, user) where *system* is the stable Tier-1 prompt and
+        *user* contains Tier-2 context + loop recap + opening instruction.
+        """
+        system = self.build_static_system(lang)
+
+        context = self.build_turn_context(game_state, loop_memory, lang)
         recap = self._build_loop_recap(loop_memory, lang)
-        if recap:
-            system += "\n\n" + recap
 
         if lang == "zh":
             if loop_memory.total_loops == 0:
-                user_msg = (
+                action = (
                     "玩家刚刚第一次抵达雷文霍洛。生成开场叙述：描述黄昏时分抵达旅馆、"
                     "小镇的氛围、以及与玛莎的第一次互动。这是故事的开始。"
                 )
             else:
-                user_msg = (
+                action = (
                     f"循环已重置。这是第{loop_memory.total_loops + 1}次循环。"
                     "玩家在晚上8点醒来，站在旅馆门口，手中握着伊莱亚斯的信。"
                     "他们拥有前几次循环的碎片记忆——某些场景似曾相识，某些面孔莫名熟悉。"
@@ -265,18 +391,23 @@ class PromptBuilder:
                 )
         else:
             if loop_memory.total_loops == 0:
-                user_msg = (
+                action = (
                     "The player has just arrived in Ravenhollow for the first time. "
                     "Generate the opening narration: describe the arrival at the inn at dusk, "
                     "the atmosphere of the town, and the first interaction with Martha. "
                     "This is the beginning of the story."
                 )
             else:
-                user_msg = (
+                action = (
                     f"The loop has reset. This is loop #{loop_memory.total_loops + 1}. "
                     "The player wakes at the inn's doorstep at 8 PM, clutching Elias's letter. "
                     "They carry fragmented memories from previous loops — certain scenes feel "
                     "hauntingly familiar, certain faces stir unnameable recognition. "
                     "Generate an immersive loop-restart narration woven with deja vu."
                 )
-        return system, user_msg
+
+        user_parts = [context]
+        if recap:
+            user_parts.append(recap)
+        user_parts.append(action)
+        return system, "\n\n".join(user_parts)

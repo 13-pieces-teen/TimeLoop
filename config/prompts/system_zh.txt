@@ -21,8 +21,19 @@
     {"type": "<add_fact|set_flag|update_trust|add_item|remove_item|move_player>", ...}
   ],
   "sanity_impact": <整数，负数为理智损失，正数为恢复>,
-  "time_advance": <整数，推进时钟的分钟数>
+  "time_advance": <整数，推进时钟的分钟数>,
+  "knowledge_triggered": [
+    {"id": "<知识ID>", "intensity": "<allusion|direct|confrontation>"}
+  ]
 }
+
+跨循环知识检测规则：
+如果上下文中列出了「可用跨循环知识」，且玩家的输入引用、暗示或间接提及了其中任何一条（即使措辞完全不同），你必须在 knowledge_triggered 中输出对应的 ID 和强度：
+- "allusion"（暗示）：模糊、间接的提及（"我好像听说过海里有什么声音"）
+- "direct"（直接）：明确引用具体事实（"托马斯失踪前听到了海里的歌声"）
+- "confrontation"（对质）：带有质问或情感冲击的揭示（"你知道托马斯为什么会听到那些声音，不是吗？"）
+只有玩家真正展示了超出当前循环已知信息的知识时才输出。如果没有使用任何跨循环知识，输出空列表 []。
+NPC的反应应与检测到的强度匹配：暗示时NPC微妙停顿；直接引用时NPC震惊或动容；对质时NPC产生强烈情绪反应。
 
 绝对规则：
 1. 绝不违背「一致性约束」部分列出的已确立事实。
@@ -38,3 +49,9 @@
     可用地点ID：inn（海风旅馆）、library（图书馆）、church（教堂）、docks（码头）、lighthouse（灯塔）、caves（洞穴）
     示例：玩家去图书馆 → state_updates 必须含 {"type": "move_player", "location": "library"}
           玩家前往码头 → state_updates 必须含 {"type": "move_player", "location": "docks"}
+
+理智相关选项规则：
+- 理智 80-100（清醒）：选项清晰、理性，诚实反映后果。
+- 理智 50-79（不安）：选项基本正常，但其中一个可能带有不祥的暗示。
+- 理智 20-49（扭曲）：三个选项中必须有一个是误导性的——它的文本听起来安全或诱人，但实际结果是危险的或徒劳的。不要标注哪个是陷阱。
+- 理智 0-19（疯狂）：选项可以包含不可能的行动、诗意的胡话、或微妙的打破第四面墙。至少一个选项应该让人感到异样或错误。sanity_cost应更极端（更大的负数）。

@@ -1,0 +1,123 @@
+/* -- Status panel (HTML) -- */
+.status-html {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.9em;
+    color: #8892b0;
+    max-height: 520px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #1e2a4a #0d1117;
+}
+.sp-section {
+    background: #0d1117;
+    border: 1px solid #1e2a4a;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}
+.sp-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #5a6785;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+/* items */
+.sp-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    color: #a8b2d1;
+    font-size: 0.88em;
+}
+.sp-item-icon {
+    font-size: 1.1em;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.sp-item-name { flex: 1; }
+/* npc rows */
+.sp-npc { margin-bottom: 8px; }
+.sp-npc-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+.sp-npc-name {
+    flex: 1;
+    color: #ccd6f6;
+    font-size: 0.88em;
+    font-weight: 600;
+}
+.sp-dots { display: flex; gap: 3px; }
+.sp-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1f2937;
+    border: 1px solid #374151;
+}
+.sp-dot.filled-gray { background: #6b7280; border-color: #6b7280; }
+.sp-dot.filled-blue { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 4px #3b82f633; }
+.sp-dot.filled-green { background: #22c55e; border-color: #22c55e; box-shadow: 0 0 4px #22c55e33; }
+.sp-dot.filled-gold { background: #eab308; border-color: #eab308; box-shadow: 0 0 4px #eab30833; }
+.sp-trust-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    color: #5a6785;
+    min-width: 20px;
+    text-align: right;
+}
+.sp-npc-hint {
+    font-size: 0.78em;
+    color: #5a6785;
+    font-style: italic;
+    padding-left: 4px;
+}
+.sp-npc-loc {
+    font-size: 0.75em;
+    color: #4b5563;
+    padding-left: 4px;
+}
+/* facts */
+.sp-cat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68em;
+    color: #3b82f6;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+.sp-fact {
+    padding: 2px 0 2px 8px;
+    font-size: 0.82em;
+    color: #8892b0;
+    border-left: 2px solid #1e2a4a;
+    margin-bottom: 3px;
+    line-height: 1.4;
+}
+.sp-empty {
+    color: #4b5563;
+    font-style: italic;
+    font-size: 0.85em;
+}
+
+/* -- Journal style for status panel -- */
+.journal-trust-desc {
+    font-size: 0.82em;
+    color: #a8b2d1;
+    font-style: italic;
+    padding-left: 4px;
+}
+.journal-mystery {
+    padding: 4px 0 4px 8px;
+    font-size: 0.82em;
+    color: #eab308;
+    border-left: 2px solid #92711a;
+    margin-bottom: 3px;
+    line-height: 1.4;
+}
