@@ -18,8 +18,9 @@ logger = logging.getLogger(__name__)
 
 class EndingProcessor:
 
-    def __init__(self, data_dir: str | Path):
+    def __init__(self, data_dir: str | Path, world_data: dict | None = None):
         self._data_dir = Path(data_dir)
+        self._world_data = world_data or {}
 
     def process(self, ctx: "TurnContext") -> "TurnResult":
         from src.game.engine import TurnResult
@@ -30,6 +31,9 @@ class EndingProcessor:
 
         gs = ctx.game_state
         choices = _inject_hallucination_choice(gs, parsed.choices, ctx.lang)
+        choices = _ensure_travel_choice(
+            gs, choices, self._world_data, ctx.lang,
+        )
 
         result = TurnResult(
             narration=parsed.narration,
@@ -84,6 +88,46 @@ def _inject_hallucination_choice(gs, choices: list[dict], lang: str) -> list[dic
     choices = list(choices)
     choices.insert(insert_pos, phantom)
     return choices[:4]
+
+
+_TRAVEL_KEYWORDS = {"go", "travel", "head", "leave", "walk", "move", "visit",
+                     "前往", "离开", "去", "走向", "出发", "前去"}
+
+
+def _ensure_travel_choice(
+    gs, choices: list[dict], world_data: dict, lang: str,
+) -> list[dict]:
+    """Hard guarantee: if player has been stuck for 3+ turns, inject a travel choice."""
+    if gs.turns_at_location < 3:
+        return choices
+
+    choice_texts = " ".join(c.get("id", "") + " " + c.get("text", "") for c in choices).lower()
+    if any(kw in choice_texts for kw in _TRAVEL_KEYWORDS):
+        return choices
+
+    loc_data = world_data.get("locations", {}).get(gs.location, {})
+    connected = loc_data.get("connected_to", [])
+    if not connected:
+        return choices
+
+    dest = random.choice(connected)
+    dest_data = world_data.get("locations", {}).get(dest, {})
+    name_key = "name_zh" if lang == "zh" else "name"
+    dest_name = dest_data.get(name_key, dest)
+
+    travel_choice = {
+        "id": f"go_to_{dest}",
+        "text": f"离开这里，前往{dest_name}" if lang == "zh" else f"Leave and head to {dest_name}",
+        "sanity_cost": 0,
+        "_travel_destination": dest,
+    }
+
+    choices = list(choices)
+    if len(choices) >= 3:
+        choices[-1] = travel_choice
+    else:
+        choices.append(travel_choice)
+    return choices
 
 
 def _check_endings(gs, data_dir: Path) -> dict | None:

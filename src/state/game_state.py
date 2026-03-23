@@ -70,6 +70,7 @@ class GameState:
     turn: int = 0
     time_minutes: int = 0  # minutes since 8 PM (0 = 8:00 PM, 240 = midnight)
     location: str = "inn"
+    turns_at_location: int = 0
     sanity: int = 100
     characters: dict[str, NPCState] = field(default_factory=dict)
     inventory: list[str] = field(default_factory=list)
@@ -126,11 +127,11 @@ class GameState:
 
     @property
     def sanity_level(self) -> str:
-        if self.sanity >= 80:
+        if self.sanity >= 70:
             return "lucid"
-        elif self.sanity >= 50:
+        elif self.sanity >= 40:
             return "uneasy"
-        elif self.sanity >= 20:
+        elif self.sanity >= 15:
             return "distorted"
         else:
             return "madness"
@@ -185,6 +186,8 @@ class GameState:
             npc.met = True
 
     def move_player(self, location: str) -> None:
+        if location != self.location:
+            self.turns_at_location = 0
         self.location = location
         visited = self.flags.setdefault("_visited_locations", [])
         if isinstance(visited, list) and location not in visited:

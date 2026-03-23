@@ -20,9 +20,10 @@ from src.ui.app import create_app
 if __name__ == "__main__":
     app = create_app()
     port = int(os.environ.get("PORT", 7860))
+    image_dir = Path(__file__).parent / "data" / "images"
     app.launch(
         share=False,
         server_name="0.0.0.0",
         server_port=port,
-        allowed_paths=["data/images"],
+        allowed_paths=[str(image_dir)],
     )

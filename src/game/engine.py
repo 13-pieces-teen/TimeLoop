@@ -14,6 +14,7 @@ from src.game.event_system import EventSystem, Event
 from src.game.game_data import (
     HALLUCINATION_CHOICES,
     TIME_PER_TURN,
+    compute_ambient_sanity_drain,
 )
 from src.game.processors.ending import EndingProcessor, _check_endings, _inject_hallucination_choice
 from src.game.processors.event import EventProcessor
@@ -130,7 +131,7 @@ class GameEngine:
             ),
             KnowledgePostProcessor(),
             PostEventProcessor(self),
-            EndingProcessor(self.data_dir),
+            EndingProcessor(self.data_dir, world_data=self.prompt_builder.world_data),
         ]
 
     # ------------------------------------------------------------------
@@ -334,6 +335,12 @@ class GameEngine:
     def _apply_parsed_output(self, parsed: ParsedOutput) -> None:
         if not self.game_state:
             return
+        # Hidden ambient drain (opening turn)
+        ambient = compute_ambient_sanity_drain(
+            self.game_state.time_minutes, self.game_state.location,
+        )
+        self.game_state.modify_sanity(ambient)
+
         self.game_state.modify_sanity(parsed.sanity_impact)
         fx = SANITY_EFFECTS.get(self.game_state.sanity_level, SANITY_EFFECTS["lucid"])
         capped_time = min(parsed.time_advance, self.cfg_time_per_turn)

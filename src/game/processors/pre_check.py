@@ -40,10 +40,17 @@ class PreCheckProcessor:
         if ctx.choice_id in HALLUCINATION_IDS:
             return self._resolve_hallucination(ctx)
 
+        # Auto-apply move for hard-injected travel choices
+        if ctx.choice_id.startswith("go_to_"):
+            dest = ctx.choice_id[len("go_to_"):]
+            if dest and dest != gs.location:
+                gs.move_player(dest)
+
         if self._event_system and ctx.choice_id:
             self._event_system.last_choice_id = ctx.choice_id
 
         gs.turn += 1
+        gs.turns_at_location += 1
 
         if gs.is_midnight:
             return self._handle_midnight(ctx)

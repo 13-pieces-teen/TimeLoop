@@ -131,3 +131,49 @@ LOCATION_KEYWORDS: list[tuple[str, list[str]]] = [
 ]
 
 ALL_EXPLORABLE_LOCATIONS = ["inn", "library", "church", "docks"]
+
+# ---------------------------------------------------------------------------
+# Ambient sanity drain — hidden from player, applied silently each turn.
+#
+# Design:  drain = time_phase_base + location_modifier
+#
+# The game day runs 8:00 PM → 12:00 AM (0–240 minutes).
+# Three phases model rising dread as midnight approaches:
+#   Dusk   (8:00–9:30 PM, min 0–89):   town feels merely unsettling
+#   Night  (9:30–11:00 PM, min 90–179): darkness deepens, whispers grow
+#   Witching (11:00 PM+, min 180+):     reality frays, drain surges
+#
+# Location modifier adds danger flavour:
+#   inn (warmth/normalcy) → 0  |  library/church → −1
+#   docks → −2  |  lighthouse → −3  |  caves → −4
+# ---------------------------------------------------------------------------
+
+_PHASE_BASE: list[tuple[int, int]] = [
+    (90,  -1),   # 8:00 PM – 9:30 PM
+    (180, -2),   # 9:30 PM – 11:00 PM
+    (999, -4),   # 11:00 PM – midnight
+]
+
+LOCATION_DANGER: dict[str, int] = {
+    "inn":        0,
+    "library":   -1,
+    "church":    -1,
+    "docks":     -2,
+    "lighthouse": -3,
+    "caves":     -4,
+}
+
+
+def compute_ambient_sanity_drain(time_minutes: int, location: str) -> int:
+    """Return the hidden per-turn sanity drain (always <= 0).
+
+    The value is NOT surfaced to the player via ``sanity_delta``.
+    """
+    base = -1
+    for threshold, drain in _PHASE_BASE:
+        if time_minutes < threshold:
+            base = drain
+            break
+
+    modifier = LOCATION_DANGER.get(location, -1)
+    return base + modifier

@@ -73,6 +73,8 @@ def _load_static_assets() -> tuple[str, str]:
 
 
 CSS, TYPEWRITER_JS = _load_static_assets()
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+EVENT_IMAGE_DIR = PROJECT_ROOT / "data" / "images" / "events"
 
 
 # =====================================================================
@@ -856,8 +858,10 @@ def _build_narrative_entry(result: TurnResult, lang: str, san_level: str) -> lis
         )
 
     if result.event_image:
-        img_url = f"/file=data/images/events/{result.event_image}"
-        scene_parts.insert(0, f'<img class="scene-cg" src="{img_url}" alt="" />')
+        image_path = EVENT_IMAGE_DIR / result.event_image
+        if image_path.exists():
+            img_url = f"/gradio_api/file={image_path.as_posix()}"
+            scene_parts.insert(0, f'<img class="scene-cg" src="{img_url}" alt="" />')
 
     entries.append(f'<div class="nf-scene">{"".join(scene_parts)}</div>')
 
@@ -1049,4 +1053,4 @@ def _no_change():
 
 if __name__ == "__main__":
     app = create_app()
-    app.launch(share=False, allowed_paths=["data/images/events"])
+    app.launch(share=False, allowed_paths=[str(EVENT_IMAGE_DIR)])

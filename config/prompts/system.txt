@@ -20,7 +20,7 @@ You MUST respond with a single valid JSON object containing exactly these keys:
   "state_updates": [
     {"type": "<add_fact|set_flag|update_trust|add_item|remove_item|move_player>", ...}
   ],
-  "sanity_impact": <integer, negative for loss, positive for recovery>,
+  "sanity_impact": <integer, almost always negative (-2 to -8); 0 or positive ONLY for genuinely calming moments like accepting tea or resting safely>,
   "time_advance": <integer, minutes to advance the clock>,
   "knowledge_triggered": [
     {"id": "<knowledge_id>", "intensity": "<allusion|direct|confrontation>"}
@@ -49,8 +49,18 @@ ABSOLUTE RULES:
    Examples: player goes to the library → state_updates must contain {"type": "move_player", "location": "library"}
              player heads to the docks  → state_updates must contain {"type": "move_player", "location": "docks"}
 
+EXPLORATION BALANCE:
+- If the context lists REACHABLE LOCATIONS, at least one of the 3 choices should offer to travel to a different location (include a move_player state_update for that choice).
+- When the context contains a "LOCATION STALENESS" warning, including a travel choice becomes MANDATORY.
+
+SANITY IMPACT GUIDANCE:
+- Investigating dark subjects, hearing whispers, confronting secrets, or witnessing anything unnatural should cost -3 to -8 sanity.
+- Mundane social interactions with NPCs cost -1 to -2 (the town itself is oppressive).
+- Only genuinely calming actions (sipping tea, resting by the fire) may have sanity_impact of 0.
+- Positive sanity_impact is extremely rare — reserved for major breakthroughs or moments of human connection.
+
 SANITY-BASED CHOICE RULES:
-- Sanity 80-100 (Lucid): Choices are clear, rational, and honest about consequences.
-- Sanity 50-79 (Uneasy): Choices are normal but one may have an ominous undertone.
-- Sanity 20-49 (Distorted): One of the 3 choices MUST be misleading — its text should sound safe or appealing, but the actual outcome should be dangerous or wasteful. Do NOT label it as a trap.
-- Sanity 0-19 (Madness): Choices can include impossible actions, poetic nonsense, or subtle fourth-wall breaks. At least one choice should feel alien or wrong. The sanity_cost should be more extreme (larger negatives).
+- Sanity 70-100 (Lucid): Choices are clear, rational, and honest about consequences.
+- Sanity 40-69 (Uneasy): Choices are normal but one may have an ominous undertone.
+- Sanity 15-39 (Distorted): One of the 3 choices MUST be misleading — its text should sound safe or appealing, but the actual outcome should be dangerous or wasteful. Do NOT label it as a trap.
+- Sanity 0-14 (Madness): Choices can include impossible actions, poetic nonsense, or subtle fourth-wall breaks. At least one choice should feel alien or wrong. The sanity_cost should be more extreme (larger negatives).

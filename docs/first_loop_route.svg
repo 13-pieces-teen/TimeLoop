@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .sub { font: 400 16px Arial, sans-serif; fill: #334155; }
+      .box { fill: #f8fafc; stroke: #3b82f6; stroke-width: 2; }
+      .txt1 { font: 700 18px Arial, sans-serif; fill: #0f172a; }
+      .txt2 { font: 400 14px Arial, sans-serif; fill: #334155; }
+      .arrow { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrowHead); }
+      .note { font: 400 14px Arial, sans-serif; fill: #0f766e; }
+    </style>
+    <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="420" fill="#ffffff"/>
+  <text x="40" y="48" class="title">TimeLoop First Loop Route</text>
+  <text x="40" y="76" class="sub">Goal: collect key facts first, then push ending content.</text>
+
+  <rect class="box" x="40" y="130" width="200" height="120" rx="14" ry="14"/>
+  <text x="60" y="170" class="txt1">1) Inn</text>
+  <text x="60" y="198" class="txt2">Martha entry point</text>
+  <text x="60" y="220" class="txt2">Elias and missing clues</text>
+
+  <rect class="box" x="270" y="130" width="200" height="120" rx="14" ry="14"/>
+  <text x="290" y="170" class="txt1">2) Library</text>
+  <text x="290" y="198" class="txt2">Eleanor forbidden texts</text>
+  <text x="290" y="220" class="txt2">Lighthouse and ritual</text>
+
+  <rect class="box" x="500" y="130" width="200" height="120" rx="14" ry="14"/>
+  <text x="520" y="170" class="txt1">3) Church</text>
+  <text x="520" y="198" class="txt2">Morrison testimony</text>
+  <text x="520" y="220" class="txt2">Ritual cost confirmed</text>
+
+  <rect class="box" x="730" y="130" width="200" height="120" rx="14" ry="14"/>
+  <text x="750" y="170" class="txt1">4) Docks</text>
+  <text x="750" y="198" class="txt2">Silas perspective</text>
+  <text x="750" y="220" class="txt2">Entity and whispers</text>
+
+  <rect class="box" x="960" y="130" width="200" height="120" rx="14" ry="14"/>
+  <text x="980" y="170" class="txt1">5) Lighthouse/Caves</text>
+  <text x="980" y="198" class="txt2">Endgame prerequisites</text>
+  <text x="980" y="220" class="txt2">Finalize route</text>
+
+  <path class="arrow" d="M240 190 L270 190"/>
+  <path class="arrow" d="M470 190 L500 190"/>
+  <path class="arrow" d="M700 190 L730 190"/>
+  <path class="arrow" d="M930 190 L960 190"/>
+
+  <text x="40" y="310" class="note">Tip: prioritize trust-up choices, then consume high-cost actions.</text>
+  <text x="40" y="336" class="note">Keywords: Elias, ritual, lighthouse lens, whispers.</text>
+</svg>

@@ -6,6 +6,7 @@ import logging
 import threading
 from typing import TYPE_CHECKING
 
+from src.game.game_data import compute_ambient_sanity_drain
 from src.llm.output_parser import parse_llm_output
 from src.state.game_state import SANITY_EFFECTS
 
@@ -124,6 +125,10 @@ class LLMProcessor:
 
 
 def _apply_parsed_output(gs, parsed, cfg_time_per_turn: int) -> None:
+    # Hidden ambient drain — not reflected in TurnResult.sanity_delta
+    ambient = compute_ambient_sanity_drain(gs.time_minutes, gs.location)
+    gs.modify_sanity(ambient)
+
     gs.modify_sanity(parsed.sanity_impact)
     fx = SANITY_EFFECTS.get(gs.sanity_level, SANITY_EFFECTS["lucid"])
     capped_time = min(parsed.time_advance, cfg_time_per_turn)

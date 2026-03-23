@@ -51,6 +51,14 @@ class KnowledgePreProcessor:
                 "请在 knowledge_triggered 中标注对应 ID 和强度。\n"
                 "标 * 的NPC在当前位置。"
             )
+            examples = (
+                "\n语义匹配示例（按意思匹配，不要求原文一致）：\n"
+                "  知识: thomas_whispers（托马斯听到了海中的歌声）\n"
+                '  玩家说「他消失前是不是听到了什么奇怪的声音？」→ 匹配 intensity=allusion\n'
+                '  玩家说「我知道托马斯在海边听到了某种歌声」→ 匹配 intensity=direct\n'
+                '  玩家说「告诉我托马斯那天晚上到底听到了什么！」→ 匹配 intensity=confrontation\n'
+                "关键：只要语义相关就应匹配，无需使用原文关键词。"
+            )
         else:
             header = (
                 "--- AVAILABLE CROSS-LOOP KNOWLEDGE ---\n"
@@ -59,8 +67,16 @@ class KnowledgePreProcessor:
                 "the ID and intensity in knowledge_triggered.\n"
                 "NPCs marked * are at the current location."
             )
+            examples = (
+                "\nSemantic matching examples (match by MEANING, not exact words):\n"
+                "  Knowledge: thomas_whispers (Thomas heard singing from the sea)\n"
+                '  Player says "Did he hear anything strange before disappearing?" → MATCH intensity=allusion\n'
+                '  Player says "I know Thomas heard some kind of song by the water" → MATCH intensity=direct\n'
+                '  Player says "Tell me what Thomas really heard that night!" → MATCH intensity=confrontation\n'
+                "Key: Different phrasing still counts if the meaning relates to the knowledge."
+            )
 
-        ctx.extra_prompt_parts.append(header + "\n" + "\n".join(lines))
+        ctx.extra_prompt_parts.append(header + "\n" + "\n".join(lines) + examples)
 
         # Fast-path keyword matching (cheap, catches obvious hits)
         for key in available:

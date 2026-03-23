@@ -1167,6 +1167,7 @@ events:
 
   - id: "confront_morrison_eleanor_triangle"
     act: 3
+    image: "morrison_truth.png"
     title: "The Truth Between Them"
     title_zh: "他们之间的真相"
     trigger:
@@ -1210,6 +1211,7 @@ events:
 
   - id: "eleanor_full_picture"
     act: 3
+    image: "eleanor_confession.png"
     title: "Eleanor's Complete Truth"
     title_zh: "埃莉诺的完整真相"
     trigger:
@@ -1248,6 +1250,7 @@ events:
 
   - id: "silas_time_awareness"
     act: 3
+    image: "silas_truth.png"
     title: "Silas Knows About the Loops"
     title_zh: "西拉斯知道循环的事"
     trigger:
@@ -1288,6 +1291,7 @@ events:
 
   - id: "martha_deep_confession"
     act: 3
+    image: "martha_husband.jpg"
     title: "Martha's Deepest Secret"
     title_zh: "玛莎最深的秘密"
     trigger:

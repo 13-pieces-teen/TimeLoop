@@ -151,7 +151,8 @@ class PromptBuilder:
         return "\n".join(lines)
 
     def _get_location_context(self, game_state: GameState, lang: str = "en") -> str:
-        loc_data = self.world_data.get("locations", {}).get(game_state.location, {})
+        all_locations = self.world_data.get("locations", {})
+        loc_data = all_locations.get(game_state.location, {})
         if not loc_data:
             return f"You are at: {game_state.location}"
 
@@ -164,17 +165,42 @@ class PromptBuilder:
         level = game_state.sanity_level
         label = "当前位置" if lang == "zh" else "CURRENT LOCATION"
 
-        if level == "lucid":
-            return f"{label}: {loc_name}\n{base_desc}"
+        parts: list[str] = [f"{label}: {loc_name}\n{base_desc}"]
 
-        note_key = f"{level}_zh" if lang == "zh" else level
-        extra = sanity_notes.get(note_key, sanity_notes.get(level, sanity_notes.get("uneasy", "")))
-        overlay_label = "理智叠加效果" if lang == "zh" else "Sanity overlay"
-        return (
-            f"{label}: {loc_name}\n"
-            f"{base_desc}\n"
-            f"[{overlay_label}: {extra}]"
-        )
+        if level != "lucid":
+            note_key = f"{level}_zh" if lang == "zh" else level
+            extra = sanity_notes.get(note_key, sanity_notes.get(level, sanity_notes.get("uneasy", "")))
+            overlay_label = "理智叠加效果" if lang == "zh" else "Sanity overlay"
+            parts.append(f"[{overlay_label}: {extra}]")
+
+        connected = loc_data.get("connected_to", [])
+        if connected:
+            dest_lines: list[str] = []
+            for dest_id in connected:
+                dest_data = all_locations.get(dest_id, {})
+                dest_name = dest_data.get(name_key, dest_id)
+                locked = dest_data.get("locked", False)
+                npcs = dest_data.get("npcs_present", [])
+                npc_hint = f" ({', '.join(npcs)})" if npcs else ""
+                lock_mark = (" [locked]" if not lang == "zh" else " [已锁定]") if locked else ""
+                dest_lines.append(f"  - {dest_id}: {dest_name}{npc_hint}{lock_mark}")
+            header = "可前往的地点：" if lang == "zh" else "REACHABLE LOCATIONS:"
+            parts.append(f"{header}\n" + "\n".join(dest_lines))
+
+        stal = game_state.turns_at_location
+        if stal >= 3:
+            if lang == "zh":
+                parts.append(
+                    f"【地点滞留警告】玩家已在此位置连续停留 {stal} 回合。"
+                    "你的3个选项中，至少1个必须是「前往其他地点」并附带 move_player。"
+                )
+            else:
+                parts.append(
+                    f"LOCATION STALENESS WARNING: Player has stayed here for {stal} consecutive turns. "
+                    "At least 1 of your 3 choices MUST be traveling to a different location with a move_player state_update."
+                )
+
+        return "\n\n".join(parts)
 
     def _get_consistency_constraints(self, game_state: GameState, lang: str = "en") -> str:
         facts = game_state.discovered_facts

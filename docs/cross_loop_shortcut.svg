@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .sub { font: 400 16px Arial, sans-serif; fill: #334155; }
+      .loop1 { fill: #eef2ff; stroke: #6366f1; stroke-width: 2; }
+      .loop2 { fill: #ecfeff; stroke: #0891b2; stroke-width: 2; }
+      .memory { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .txt1 { font: 700 18px Arial, sans-serif; fill: #0f172a; }
+      .txt2 { font: 400 14px Arial, sans-serif; fill: #334155; }
+      .arrow { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrowHead); }
+      .dash { stroke: #f97316; stroke-width: 3; fill: none; stroke-dasharray: 8 6; marker-end: url(#arrowHeadOrange); }
+      .note { font: 400 14px Arial, sans-serif; fill: #0f766e; }
+    </style>
+    <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowHeadOrange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#f97316"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="520" fill="#ffffff"/>
+  <text x="40" y="48" class="title">TimeLoop Cross-Loop Shortcut</text>
+  <text x="40" y="76" class="sub">Collect key fact in Loop 1, trigger shortcut event in Loop 2.</text>
+
+  <rect class="loop1" x="40" y="120" width="340" height="120" rx="14" ry="14"/>
+  <text x="60" y="160" class="txt1">Loop 1: gather facts</text>
+  <text x="60" y="188" class="txt2">Arrival - Meeting Martha</text>
+  <text x="60" y="212" class="txt2">- Martha Recognizes Elias Name</text>
+  <text x="60" y="236" class="txt2">- Martha Secret</text>
+
+  <rect class="memory" x="430" y="140" width="330" height="90" rx="12" ry="12"/>
+  <text x="450" y="176" class="txt1">LoopMemory persisted</text>
+  <text x="450" y="200" class="txt2">fact: thomas_holloway_heard_whispers</text>
+
+  <rect class="loop2" x="820" y="120" width="340" height="120" rx="14" ry="14"/>
+  <text x="840" y="160" class="txt1">Loop 2: shortcut trigger</text>
+  <text x="840" y="188" class="txt2">Arrival - Meeting Martha</text>
+  <text x="840" y="212" class="txt2">- You Already Know (special)</text>
+  <text x="840" y="236" class="txt2">skip repeated exploration</text>
+
+  <path class="arrow" d="M380 180 L430 180"/>
+  <path class="dash" d="M760 180 L820 180"/>
+
+  <rect class="loop2" x="180" y="300" width="840" height="130" rx="14" ry="14"/>
+  <text x="210" y="338" class="txt1">Minimal reproducible path</text>
+  <text x="210" y="364" class="txt2">1 new game  2 hello  3 elias  4 continue  5 restart loop  6 hello  7 continue</text>
+  <text x="210" y="390" class="txt2">Expected sequence: Arrival - Meeting Martha - Recognizes - Secret - Loop2 - You Already Know</text>
+  <text x="210" y="416" class="txt2">Expected result: special event text and image visible</text>
+
+  <text x="40" y="480" class="note">If port 7860 is occupied, run on 7861 and keep same session window.</text>
+</svg>
